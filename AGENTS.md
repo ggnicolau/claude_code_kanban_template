@@ -26,9 +26,11 @@ Senior Python project workspace.
 
 ## Template Usage
 - Este repositorio tambem funciona como template para criar novos repositorios no GitHub.
+- Neste folder, se o usuario disser `iniciar`, `start`, `novo repo` ou algo equivalente, prefira usar o wizard `python scripts/new_repo.py`.
 - Se o usuario pedir para criar um novo projeto a partir deste template, prefira criar um repositorio privado, salvo instrucao contraria.
 - Ao criar um novo repositorio a partir do template, configurar o secret `GH_PAT` no repositorio novo antes de depender da criacao do GitHub Project.
 - Depois de configurar `GH_PAT`, rodar a workflow `Setup Kanban`.
+- Comando padrao do wizard: `python scripts/new_repo.py`
 - Validar ao final:
 - existe um project com nome `<repo> Kanban`
 - existem as views `Board`, `Table` e `Done`
