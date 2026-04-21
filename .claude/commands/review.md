@@ -1,14 +1,11 @@
-# Code Review
+# Review Orquestrado
 
-Faça uma revisão completa das mudanças no branch atual comparado à main.
+Dispare os dois subagentes abaixo em paralelo (numa única chamada com dois Agent tool calls simultâneos):
 
-Verifique:
-- Corretude lógica e edge cases
-- Type hints e consistência de tipos
-- Performance (especialmente em loops sobre dados grandes)
-- Padrões do projeto definidos em CLAUDE.md
-- Testes ausentes ou insuficientes
+1. **code-reviewer** — revisão de corretude, tipos, padrões e testes
+2. **security-auditor** — varredura de segurança e exposição de dados
 
-Formato da saída: lista priorizada por severidade (crítico / aviso / sugestão).
+Após ambos retornarem, consolide os resultados num único relatório com severidade unificada:
+🔴 Crítico | 🟡 Aviso | 🔵 Sugestão
 
 $ARGUMENTS
