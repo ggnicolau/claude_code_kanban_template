@@ -1,12 +1,9 @@
 # Project Overview
 
-Senior NLP / Data Science project workspace.
+Senior Python project workspace.
 
 ## Stack
 - Python 3.11+
-- NLP: spaCy, HuggingFace Transformers, NLTK
-- ML: scikit-learn, PyTorch
-- Data: pandas, numpy
 - Tests: pytest
 - Formatting: ruff, black
 - Env management: uv or conda
@@ -19,9 +16,8 @@ Senior NLP / Data Science project workspace.
 - Nunca commitar dados brutos ou modelos pesados — use `.gitignore`
 
 ## Architecture Notes
-- Pipelines de NLP seguem o padrão: raw → processed → features → model
-- Experimentos rastreados via MLflow ou simples logs estruturados
 - Scripts CLI usam `typer` ou `argparse`
+- Logs estruturados para rastrear execuções
 
 ## What to Avoid
 - Não usar `print()` para debug — use `logging`
