@@ -1,17 +1,21 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import dataclass
 import json
 import os
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import Iterable
 
 
 ROOT = Path(__file__).resolve().parents[1]
 MCP_CONFIG_PATH = ROOT / ".mcp.json"
+SETUP_KANBAN_WORKFLOW_NAME = "Setup Kanban"
+SETUP_KANBAN_WORKFLOW_FILE = "setup-kanban.yml"
 
 
 def run_command(command: list[str], env: dict[str, str]) -> str:
@@ -44,6 +48,32 @@ def load_env() -> dict[str, str]:
         if auth_header.startswith("Bearer "):
             env["GH_TOKEN"] = auth_header.removeprefix("Bearer ").strip()
     return env
+
+
+@dataclass(slots=True)
+class ValidationReport:
+    repo_url: str
+    project_url: str
+    board_exists: bool
+    table_exists: bool
+    done_exists: bool
+    getting_started_exists: bool
+    issue_in_project: bool
+    issue_status: str
+
+    @property
+    def is_valid(self) -> bool:
+        return all(
+            [
+                bool(self.project_url),
+                self.board_exists,
+                self.table_exists,
+                self.done_exists,
+                self.getting_started_exists,
+                self.issue_in_project,
+                self.issue_status == "Todo",
+            ]
+        )
 
 
 def parse_origin_repo(env: dict[str, str]) -> str:
@@ -117,9 +147,54 @@ def maybe_set_secret(
 
 
 def maybe_run_workflow(env: dict[str, str], full_name: str, workflow_name: str) -> str:
+    workflow_identifier = resolve_workflow_identifier(
+        env=env,
+        full_name=full_name,
+        workflow_name=workflow_name,
+        workflow_file=SETUP_KANBAN_WORKFLOW_FILE,
+    )
     return run_command(
-        ["gh", "workflow", "run", workflow_name, "--repo", full_name],
+        ["gh", "workflow", "run", workflow_identifier, "--repo", full_name],
         env,
+    )
+
+
+def list_workflows(env: dict[str, str], full_name: str) -> list[dict[str, object]]:
+    output = run_command(
+        ["gh", "api", f"repos/{full_name}/actions/workflows"],
+        env,
+    )
+    return json.loads(output).get("workflows", [])
+
+
+def resolve_workflow_identifier(
+    env: dict[str, str],
+    full_name: str,
+    workflow_name: str,
+    workflow_file: str,
+    retries: int = 5,
+    delay_seconds: float = 2.0,
+) -> str:
+    last_seen: list[str] = []
+    expected_path = f".github/workflows/{workflow_file}"
+    for attempt in range(retries):
+        workflows = list_workflows(env, full_name)
+        last_seen = [
+            str(workflow.get("name") or workflow.get("path") or workflow.get("id") or "")
+            for workflow in workflows
+        ]
+        for workflow in workflows:
+            name = str(workflow.get("name", ""))
+            path = str(workflow.get("path", ""))
+            if name == workflow_name or path == expected_path or path.endswith(
+                f"/{expected_path}"
+            ):
+                return str(workflow["id"])
+        if attempt < retries - 1:
+            time.sleep(delay_seconds)
+    available = ", ".join(last_seen) if last_seen else "nenhuma workflow encontrada"
+    raise RuntimeError(
+        f"Workflow {workflow_name!r} nao encontrada em {full_name}. Disponiveis: {available}"
     )
 
 
@@ -157,15 +232,125 @@ def summarize_validation(
     full_name: str,
     project_title: str,
 ) -> None:
-    project_url = find_project(env, project_title)
-    issues = list_repo_issues(env, full_name)
+    report = build_validation_report(env, full_name, project_title)
 
     print("\nValidacao")
-    print(f"- Repositorio: https://github.com/{full_name}")
-    print(f"- Project: {project_url or 'nao encontrado'}")
-    print(f"- Issues abertas: {len(issues)}")
-    for issue in issues:
-        print(f"  - #{issue['number']} {issue['title']} ({issue['state']})")
+    print(f"- Repositorio: {report.repo_url}")
+    print(f"- Project: {report.project_url or 'nao encontrado'}")
+    print(f"- View Board: {'ok' if report.board_exists else 'faltando'}")
+    print(f"- View Table: {'ok' if report.table_exists else 'faltando'}")
+    print(f"- View Done: {'ok' if report.done_exists else 'faltando'}")
+    print(
+        "- Issue Getting Started: "
+        f"{'ok' if report.getting_started_exists else 'nao encontrada'}"
+    )
+    print(
+        "- Issue no project: "
+        f"{'ok' if report.issue_in_project else 'nao adicionada ao project'}"
+    )
+    print(f"- Status da issue: {report.issue_status or 'nao definido'}")
+
+    if not report.is_valid:
+        raise RuntimeError("Validacao final falhou.")
+
+
+def build_validation_report(
+    env: dict[str, str],
+    full_name: str,
+    project_title: str,
+) -> ValidationReport:
+    query = """
+    query {
+      viewer {
+        projectsV2(first: 100, orderBy: {field: TITLE, direction: ASC}) {
+          nodes {
+            title
+            url
+            closed
+            views(first: 20) {
+              nodes {
+                name
+              }
+            }
+            items(first: 100) {
+              nodes {
+                content {
+                  __typename
+                  ... on Issue {
+                    title
+                    number
+                  }
+                }
+                fieldValues(first: 20) {
+                  nodes {
+                    __typename
+                    ... on ProjectV2ItemFieldSingleSelectValue {
+                      name
+                      field {
+                        ... on ProjectV2SingleSelectField {
+                          name
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    """
+    output = run_command(["gh", "api", "graphql", "-f", f"query={query}"], env)
+    data = json.loads(output)
+    projects = data["data"]["viewer"]["projectsV2"]["nodes"]
+    project = next(
+        (
+            node
+            for node in projects
+            if node["title"] == project_title and not node["closed"]
+        ),
+        None,
+    )
+    issues = list_repo_issues(env, full_name)
+    issue = next((item for item in issues if item["title"] == "Getting Started"), None)
+
+    view_names = {
+        node["name"]
+        for node in (project or {}).get("views", {}).get("nodes", [])
+        if node.get("name")
+    }
+    issue_in_project = False
+    issue_status = ""
+    if project and issue:
+        for item in project["items"]["nodes"]:
+            content = item.get("content") or {}
+            if (
+                content.get("__typename") == "Issue"
+                and content.get("number") == issue["number"]
+            ):
+                issue_in_project = True
+                for field_value in item.get("fieldValues", {}).get("nodes", []):
+                    field = field_value.get("field") or {}
+                    if (
+                        field_value.get("__typename")
+                        == "ProjectV2ItemFieldSingleSelectValue"
+                        and field.get("name") == "Status"
+                    ):
+                        issue_status = str(field_value.get("name", ""))
+                        break
+                break
+
+    return ValidationReport(
+        repo_url=f"https://github.com/{full_name}",
+        project_url=project["url"] if project else "",
+        board_exists="Board" in view_names,
+        table_exists="Table" in view_names,
+        done_exists="Done" in view_names,
+        getting_started_exists=issue is not None,
+        issue_in_project=issue_in_project,
+        issue_status=issue_status,
+    )
 
 
 def ensure_repo_absent(env: dict[str, str], full_name: str) -> None:
@@ -207,12 +392,31 @@ def parse_args(argv: Iterable[str]) -> argparse.Namespace:
         action="store_true",
         help="Nao roda a validacao final.",
     )
+    parser.add_argument(
+        "--yes",
+        action="store_true",
+        help="Confirma automaticamente a criacao sem pedir aprovacao final.",
+    )
     return parser.parse_args(list(argv))
+
+
+def is_interactive() -> bool:
+    return sys.stdin.isatty()
+
+
+def should_confirm_creation(args: argparse.Namespace, interactive: bool) -> bool:
+    return interactive and not args.yes
+
+
+def should_prompt(args: argparse.Namespace, interactive: bool) -> bool:
+    return interactive and not args.yes
 
 
 def main(argv: Iterable[str] | None = None) -> int:
     args = parse_args(argv or sys.argv[1:])
     env = load_env()
+    interactive = is_interactive()
+    prompt_enabled = should_prompt(args, interactive)
     template_repo = parse_origin_repo(env)
     owner = template_repo.split("/", maxsplit=1)[0]
 
@@ -222,22 +426,32 @@ def main(argv: Iterable[str] | None = None) -> int:
     repo_name = build_repo_name(
         args.name or prompt_text("Nome do novo repositorio", required=True)
     )
-    visibility = args.visibility or prompt_choice(
-        "Visibilidade do repositorio",
-        [("private", "Privado"), ("public", "Publico")],
-        default_key="private",
-    )
+    visibility = args.visibility
+    if visibility is None:
+        visibility = (
+            prompt_choice(
+                "Visibilidade do repositorio",
+                [("private", "Privado"), ("public", "Publico")],
+                default_key="private",
+            )
+            if prompt_enabled
+            else "private"
+        )
     description = (
         args.description
         if args.description is not None
-        else prompt_text("Descricao", default="", required=False)
+        else (
+            prompt_text("Descricao", default="", required=False)
+            if prompt_enabled
+            else ""
+        )
     )
 
     configure_secret = not args.skip_secret
     run_workflow_now = not args.skip_workflow
     validate_result = not args.skip_validate
 
-    if args.skip_secret is False and args.name is None:
+    if args.skip_secret is False and args.name is None and prompt_enabled:
         configure_secret = (
             prompt_choice(
                 "Configurar o secret GH_PAT no repo novo?",
@@ -246,7 +460,7 @@ def main(argv: Iterable[str] | None = None) -> int:
             )
             == "yes"
         )
-    if args.skip_workflow is False and args.name is None:
+    if args.skip_workflow is False and args.name is None and prompt_enabled:
         run_workflow_now = (
             prompt_choice(
                 "Rodar a workflow Setup Kanban agora?",
@@ -255,7 +469,7 @@ def main(argv: Iterable[str] | None = None) -> int:
             )
             == "yes"
         )
-    if args.skip_validate is False and args.name is None:
+    if args.skip_validate is False and args.name is None and prompt_enabled:
         validate_result = (
             prompt_choice(
                 "Validar resultado no final?",
@@ -275,13 +489,17 @@ def main(argv: Iterable[str] | None = None) -> int:
     print(f"- Rodar Setup Kanban: {'sim' if run_workflow_now else 'nao'}")
     print(f"- Validar ao final: {'sim' if validate_result else 'nao'}")
 
-    if prompt_choice(
-        "Deseja continuar?",
-        [("yes", "Sim"), ("no", "Nao")],
-        default_key="yes",
-    ) != "yes":
-        print("Operacao cancelada.")
-        return 0
+    if should_confirm_creation(args, interactive):
+        if (
+            prompt_choice(
+                "Deseja continuar?",
+                [("yes", "Sim"), ("no", "Nao")],
+                default_key="yes",
+            )
+            != "yes"
+        ):
+            print("Operacao cancelada.")
+            return 0
 
     try:
         ensure_repo_absent(env, full_name)

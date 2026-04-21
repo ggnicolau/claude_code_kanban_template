@@ -53,6 +53,7 @@ iniciar
 ```
 
 e o agente deve preferir esse wizard como fluxo padrao.
+Quando automatizar esse passo, deve usar `--yes` para evitar prompts finais em modo nao interativo.
 
 ## Como usar manualmente
 

@@ -4,3 +4,7 @@ CLAUDE.local.md
 
 # Settings locais do Claude Code
 .claude/settings.local.json
+.claude/worktrees/
+
+# Artefatos locais do Python
+__pycache__/
