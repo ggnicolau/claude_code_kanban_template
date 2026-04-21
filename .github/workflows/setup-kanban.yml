@@ -39,18 +39,7 @@ jobs:
             ISSUE_NUMBER="$EXISTING_ISSUE_NUMBER"
             echo "Issue existente encontrada: #$ISSUE_NUMBER"
           else
-            ISSUE_BODY=$(cat <<'EOF'
-## Setup inicial
-
-- [ ] Renomear `project-name` em `pyproject.toml`
-- [ ] Criar `.mcp.json` a partir de `.mcp.json.example` (nao commitar)
-- [ ] Criar `CLAUDE.local.md` a partir de `CLAUDE.local.md.example` (nao commitar)
-- [ ] Rodar `uv sync` para instalar dependencias
-- [ ] Abrir o projeto no Claude Code: `claude`
-
-> Este issue foi criado automaticamente pelo workflow Setup Kanban.
-EOF
-)
+            ISSUE_BODY=$'## Setup inicial\n\n- [ ] Renomear `project-name` em `pyproject.toml`\n- [ ] Criar `.mcp.json` a partir de `.mcp.json.example` (nao commitar)\n- [ ] Criar `CLAUDE.local.md` a partir de `CLAUDE.local.md.example` (nao commitar)\n- [ ] Rodar `uv sync` para instalar dependencias\n- [ ] Abrir o projeto no Claude Code: `claude`\n\n> Este issue foi criado automaticamente pelo workflow Setup Kanban.'
 
             ISSUE_NUMBER=$(gh api repos/${{ github.repository }}/issues \
               -f title='Getting Started' \
