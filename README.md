@@ -6,18 +6,29 @@ Template base para novos projetos Python com Claude Code configurado e kanban no
 
 ```mermaid
 graph TD
-    U(["👤 Usuário"]) --> TL["🧠 Tech Lead\norquestrador + code review"]
+    U(["👤 Usuário"]) --> PM["🗂️ Project Manager\nponto de entrada"]
 
-    TL --> PO["📋 Product Owner\nkanban + apresentações"]
+    PM --> PO["📋 Product Owner\nkanban + apresentações"]
+    PM --> TL["🧠 Tech Lead\norquestrador técnico + code review"]
+
+    PO --> RES["🔍 Researcher\npesquisa + benchmarks"]
+    PO --> KB[("GitHub Kanban")]
+
     TL --> DE["🔧 Data Engineer\npipelines + ETL"]
     TL --> MLE["📊 ML Engineer\nmodelos + experimentos"]
     TL --> AIE["🤖 AI Engineer\nLLMs + agentes + RAG"]
     TL --> IDF["☁️ Infra & DevOps\ncloud + CI/CD"]
     TL --> QA["✅ QA\ntestes + qualidade"]
-    TL --> RES["🔍 Researcher\npesquisa + benchmarks"]
+    TL --> RES
     TL --> SEC["🔒 Security Auditor\nsegurança + vulnerabilidades"]
 
-    PO --> KB[("GitHub Kanban")]
+    MLE --> DE
+    MLE --> RES
+    AIE --> RES
+    AIE --> MLE
+    QA --> DE
+    QA --> MLE
+    IDF --> SEC
 ```
 
 ## O que esta incluido
@@ -25,6 +36,7 @@ graph TD
 ```text
 .claude/
   agents/
+    project-manager.md
     tech-lead.md
     product-owner.md
     data-engineer.md
