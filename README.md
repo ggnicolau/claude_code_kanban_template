@@ -31,10 +31,12 @@ CLAUDE.md                 # Instruções do projeto para o Claude
 ## Como usar
 
 1. Clique em **Use this template** → **Create a new repository**
-2. Clone o novo repo localmente
-3. Crie `.mcp.json` com seu PAT do GitHub (não commitar — já está no `.gitignore`)
-4. Crie `CLAUDE.local.md` com suas preferências pessoais (não commitar)
-5. Abra o projeto no Claude Code: `claude`
+2. Adicione um PAT com escopo `project` como secret `GH_PAT` no novo repo (Settings → Secrets → Actions)
+3. Vá em **Actions → Setup Kanban → Run workflow** — isso cria as labels e o Project board automaticamente
+4. Clone o repo localmente
+5. Crie `.mcp.json` com seu PAT do GitHub (não commitar — já está no `.gitignore`)
+6. Crie `CLAUDE.local.md` com suas preferências pessoais (não commitar)
+7. Abra o projeto no Claude Code: `claude`
 
 ## Kanban
 

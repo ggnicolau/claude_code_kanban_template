@@ -1,0 +1,59 @@
+name: Setup Kanban
+
+on:
+  workflow_dispatch:
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - name: Criar labels do kanban
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create "backlog"      --color "ededed" --description "Ideias e tarefas futuras"  --repo ${{ github.repository }} --force
+          gh label create "todo"         --color "0075ca" --description "Próximas a fazer"           --repo ${{ github.repository }} --force
+          gh label create "in-progress" --color "e4e669" --description "Em andamento"               --repo ${{ github.repository }} --force
+          gh label create "review"       --color "d93f0b" --description "Aguardando revisão"         --repo ${{ github.repository }} --force
+          gh label create "done"         --color "0e8a16" --description "Concluído"                  --repo ${{ github.repository }} --force
+
+      - name: Criar GitHub Project board
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          OWNER_ID=$(gh api graphql -f query='query { viewer { id } }' --jq '.data.viewer.id')
+
+          PROJECT_DATA=$(gh api graphql -f query="
+            mutation {
+              createProjectV2(input: {ownerId: \"$OWNER_ID\", title: \"Kanban\"}) {
+                projectV2 { id url }
+              }
+            }
+          ")
+
+          PROJECT_ID=$(echo "$PROJECT_DATA" | jq -r '.data.createProjectV2.projectV2.id')
+          PROJECT_URL=$(echo "$PROJECT_DATA" | jq -r '.data.createProjectV2.projectV2.url')
+          echo "Project criado: $PROJECT_URL"
+
+          # Adiciona campo de status com as colunas do kanban
+          gh api graphql -f query="
+            mutation {
+              createProjectV2Field(input: {
+                projectId: \"$PROJECT_ID\",
+                dataType: SINGLE_SELECT,
+                name: \"Status\",
+                singleSelectOptions: [
+                  {name: \"Backlog\",      color: GRAY,   description: \"Ideias e tarefas futuras\"},
+                  {name: \"Todo\",         color: BLUE,   description: \"Próximas a fazer\"},
+                  {name: \"In Progress\",  color: YELLOW, description: \"Em andamento\"},
+                  {name: \"Review\",       color: RED,    description: \"Aguardando revisão\"},
+                  {name: \"Done\",         color: GREEN,  description: \"Concluído\"}
+                ]
+              }) {
+                projectV2Field { ... on ProjectV2SingleSelectField { id name } }
+              }
+            }
+          "
