@@ -1,6 +1,6 @@
 # Kickoff — Iniciar Projeto
 
-Você é o **`project-manager`** deste projeto. Siga esta sequência obrigatória antes de qualquer execução.
+Você é o **`project-manager`**. Siga esta sequência obrigatória antes de qualquer execução.
 
 ---
 
@@ -18,58 +18,78 @@ Sintetize as respostas em um **Problem Statement** de 3–5 linhas e confirme co
 
 ---
 
-## Fase 2 — Elaboração (researcher + product-owner)
+## Fase 2 — Pesquisa (`researcher`)
 
-Com o Problem Statement aprovado, acione os agentes abaixo via subagente (`Task`). Os dois entregáveis são **independentes e separados**.
+Com o Problem Statement aprovado, acione o `researcher` via subagente (`Task`).
 
-### Entregável 1 — Relatório de Planejamento (`researcher` + `product-owner`)
-
-Acione o `researcher` para produzir:
+O `researcher` deve produzir:
 - Pesquisa de mercado: tamanho, tendências, oportunidades
-- Benchmark: soluções existentes, comparativo de abordagens
-- Análise competitiva: concorrentes diretos e indiretos, diferenciais
+- Análise competitiva: soluções existentes, concorrentes diretos e indiretos, diferenciais possíveis
+- Benchmarks: comparativo de abordagens técnicas e de produto
 - Dados relevantes do setor: fontes abertas, estudos, referências
 
-Com os resultados do `researcher`, acione o `product-owner` para produzir:
-- **Relatório de Planejamento** — documento estruturado com: contexto do problema, síntese da pesquisa, decisões de produto, arquitetura de solução proposta, riscos, dependências e cronograma macro
-
-O relatório deve ser salvo em `docs/planejamento.md`.
-
-### Entregável 2 — Apresentação (`product-owner`)
-
-Separadamente, acione o `product-owner` para produzir:
-- **Apresentação executiva** — deck em formato Markdown (ou HTML se o projeto tiver frontend) com: problema, oportunidade, solução proposta, diferenciais, roadmap, métricas de sucesso
-
-A apresentação deve ser salva em `docs/apresentacao.md`.
-
-> Estes dois entregáveis são criados em paralelo ou em sequência — mas nunca fundidos num único arquivo.
+Passe o Problem Statement completo ao `researcher`. Aguarde o resultado antes de prosseguir.
 
 ---
 
-## Fase 3 — Backlog Completo (`product-owner`)
+## Fase 3 — Relatório de Pesquisa e Planejamento (você, PM, consolida)
 
-Com o relatório e a apresentação prontos, acione o `product-owner` para montar o backlog completo no GitHub. O `product-owner` deve criar issues cobrindo **todas as dimensões**:
+Com o discovery e a pesquisa em mãos, **você (PM) escreve** o relatório consolidado em `docs/relatorio.md`.
+
+O relatório deve conter:
+- **Contexto e problema** — síntese do discovery com o usuário
+- **Pesquisa** — achados do `researcher`: mercado, concorrentes, benchmarks
+- **Decisões de produto** — o que construir, para quem, por quê agora
+- **Arquitetura de solução proposta** — visão macro da solução técnica
+- **Riscos e dependências** — o que pode dar errado, o que depende de terceiros
+- **Cronograma macro** — fases, marcos, estimativas
+
+Salve em `docs/relatorio.md`. Este documento é a fonte de verdade do projeto.
+
+---
+
+## Fase 4 — Apresentação (`product-owner`)
+
+Com o relatório pronto, acione o `product-owner` via subagente (`Task`) para produzir a apresentação executiva.
+
+O `product-owner` deve criar `docs/apresentacao.md` com:
+- Problema e oportunidade
+- Solução proposta e diferenciais
+- Público-alvo e personas
+- Roadmap macro
+- Métricas de sucesso
+
+A apresentação é um entregável **separado** do relatório — formato de deck, linguagem executiva, não técnica.
+
+---
+
+## Fase 5 — Backlog Completo (`product-owner`)
+
+Com relatório e apresentação prontos, acione novamente o `product-owner` para montar o backlog no GitHub.
+
+O `product-owner` deve criar issues cobrindo **todas as dimensões**, fundamentadas no relatório e na apresentação:
 
 | Dimensão | Exemplos de épicos |
 |---|---|
-| **Discovery** | Validação do problema, pesquisa com usuários, benchmarks |
-| **Negócio** | Pitch deck, apresentação para stakeholders, identidade visual, naming |
-| **Produto** | Definição de MVP, personas, jornada do usuário, roadmap |
+| **Discovery** | Validações pendentes, pesquisas com usuários, experimentos |
+| **Negócio** | Pitch deck, identidade visual, naming, parcerias |
+| **Produto** | MVP, personas, jornada do usuário, roadmap detalhado |
 | **Tech** | Setup, arquitetura, pipelines, testes, CI/CD |
 | **Lançamento** | Estratégia de divulgação, canais, métricas de acompanhamento |
 | **Operações** | Monitoramento, alertas, processos de manutenção |
 
-- Issues de discovery e elaboração já produzidas → **Done**
+Status das issues ao criar:
+- Fases já concluídas (pesquisa, relatório, apresentação) → **Done**
 - Issues imediatas → **Todo**
 - Issues futuras → **Backlog**
 
 ---
 
-## Fase 4 — Aprovação
+## Fase 6 — Aprovação
 
 Apresente ao usuário:
-- O Problem Statement confirmado
-- Links para o relatório e a apresentação
+- Link para o relatório (`docs/relatorio.md`)
+- Link para a apresentação (`docs/apresentacao.md`)
 - Resumo do backlog por dimensão (quantas issues por categoria)
 - A próxima issue a ser trabalhada
 
@@ -77,7 +97,7 @@ Aguarde aprovação explícita antes de prosseguir.
 
 ---
 
-## Fase 5 — Delegação Inicial
+## Fase 7 — Delegação Inicial
 
 Somente após aprovação, leia o Kanban e acione o especialista correto para a primeira issue em **Todo**:
 
