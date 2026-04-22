@@ -120,7 +120,7 @@ Se este folder for usado para criar um novo repositorio a partir do template, o 
 python scripts/new_repo.py
 ```
 
-Ou simplesmente diga `iniciar` em uma conversa nova neste projeto.
+Ou use `/wizard` em uma conversa nova neste projeto.
 
 O wizard ajuda a:
 - escolher nome e visibilidade do repositorio
