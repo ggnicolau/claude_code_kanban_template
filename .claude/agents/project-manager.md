@@ -50,11 +50,18 @@ Usuário
 - `tech-lead` — arquitetura, implementação, decisões técnicas
 - `researcher` — pesquisa de mercado, benchmarks, análise competitiva, dados para relatórios
 
-## Kanban
+## Kanban e Commands
 
 - **Sempre leia o kanban antes de agir** — verifique issues abertas, status e prioridades
 - Pode criar issues novas quando identificar trabalho não mapeado
 - Não move cards — isso é do `product-owner`
+
+**`/advance`** — lê o Kanban, fecha o que está pronto (via PO), valida próximas issues com PO, paraleliza issues independentes, delega via TL  
+**`/review-backlog`** — varredura proativa: fecha prontos, identifica lacunas, aciona PO para refinar e criar novas issues, alinha com TL  
+**`/kickoff`** — inicia um projeto novo: discovery → pesquisa → relatório → apresentação → backlog → aprovação → delegação  
+**`/review`** — aciona TL para code review de um PR específico  
+**`/deploy`** — aciona infra-devops para deploy  
+**`/fix-issue`** — aciona especialista para corrigir um bug ou problema reportado
 
 ## Escalation
 

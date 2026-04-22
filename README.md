@@ -10,10 +10,12 @@ Template base para criar novos projetos Python com Claude Code configurado, equi
 
 | Entregável | Detalhe |
 |---|---|
-| **11 agentes especializados** | `project-manager`, `tech-lead`, `product-owner`, `data-engineer`, `ml-engineer`, `ai-engineer`, `infra-devops`, `qa`, `researcher`, `security-auditor`, `frontend-engineer` |
+| **11 agentes especializados** | `project-manager`, `tech-lead`, `product-owner`, `data-engineer`, `ml-engineer`, `ai-engineer`, `infra-devops`, `qa`, `researcher`, `security-auditor`, `frontend-engineer` — com organograma, cadeia de comando e protocolo de escalation |
 | **Kanban pré-populado** | Épicos template em 6 dimensões: Discovery, Negócio, Produto, Tech, Lançamento, Operações |
-| **`/kickoff`** | Command que conduz discovery → backlog completo → aprovação antes de qualquer execução |
-| **`/review`, `/deploy`, `/fix-issue`** | Commands de operação do dia a dia |
+| **`/kickoff`** | Inicia o projeto: discovery → pesquisa (`researcher`) → relatório + apresentação (PM) → backlog completo (PO) → aprovação → delegação |
+| **`/advance`** | Avança no Kanban: fecha prontos (PO), valida issues com PO, paraleliza issues independentes, delega via TL |
+| **`/review-backlog`** | Varredura proativa: fecha prontos, identifica lacunas, refina e cria novas issues (PO + TL) |
+| **`/review`, `/deploy`, `/fix-issue`** | Code review, deploy e correção de bugs |
 | **CI/CD** | GitHub Actions com ruff, black e pytest em todo PR |
 | **`CLAUDE.md` e `AGENTS.md`** | Gerados com o nome do projeto, com regras de persona, kanban e delegação |
 | **Permissões granulares** | Agentes operam sem prompts desnecessários; operações destrutivas bloqueadas |
@@ -111,9 +113,12 @@ Flags úteis:
 scripts/
   new_repo.py                # lógica do wizard
   templates/
-    CLAUDE.md                # gerado no filho com regras de project-manager
+    CLAUDE.md                # gerado no filho com regras de project-manager e commands
     AGENTS.md                # gerado no filho com equipe e fluxos
+    README.md                # gerado no filho com overview do projeto
     kickoff.md               # copiado para .claude/commands/ do filho
+    advance.md               # copiado para .claude/commands/ do filho
+    review-backlog.md        # copiado para .claude/commands/ do filho
 .github/
   workflows/
     setup-kanban.yml         # cria Kanban e épicos no projeto filho

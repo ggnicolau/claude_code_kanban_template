@@ -122,6 +122,19 @@ Regra central: **nenhum agente faz merge do próprio trabalho sem aprovação do
 
 ---
 
+## Commands Disponíveis
+
+| Command | Quando usar |
+|---|---|
+| `/kickoff` | Iniciar um projeto novo — discovery, pesquisa, relatório, apresentação, backlog, delegação |
+| `/advance` | Avançar no Kanban — fecha prontos, valida com PO, paraleliza issues independentes, delega |
+| `/review-backlog` | Varredura proativa — fecha prontos, identifica lacunas, refina e cria novas issues |
+| `/review` | Acionar TL para code review de um PR específico |
+| `/deploy` | Acionar infra-devops para deploy |
+| `/fix-issue` | Acionar especialista para corrigir um bug ou problema reportado |
+
+---
+
 ## Skills Disponíveis
 
 Skills base em `.agents/skills/` — uma por agente. Skills Caveman são opcionais:

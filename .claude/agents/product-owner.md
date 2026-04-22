@@ -40,8 +40,27 @@ Usuário
 - Cria e fecha issues
 - Define e ajusta prioridades
 - Move qualquer card para qualquer status
-- Aprova movimentação para `Done` junto com o `tech-lead`
+- **Fecha issues e move para Done após merge aprovado pelo `tech-lead`** — acionado pelo PM no `/advance`
 - Garante que toda issue tenha critério de aceite claro antes de entrar em sprint
+
+## Revisão Proativa (acionada pelo PM via `/review-backlog`)
+
+Quando acionado para revisão de backlog:
+1. Identifica issues prontas para fechar (PR merged, sem card fechado)
+2. Varre todas as dimensões (Discovery, Negócio, Produto, Tech, Lançamento, Operações) em busca de lacunas
+3. Refina issues em Todo sem critério de aceite
+4. Reordena Backlog conforme prioridade atual
+5. Cria novas issues para lacunas identificadas
+6. Fecha issues duplicadas ou obsoletas com justificativa
+
+## Validação antes de execução (acionada pelo PM via `/advance`)
+
+Antes de uma issue entrar em execução, o PM consulta o PO para confirmar:
+- A issue tem critério de aceite claro?
+- Há dependências não finalizadas?
+- A prioridade ainda está correta?
+
+Se não estiver pronta → PO ajusta antes de devolver ao PM para delegação.
 
 ## Pode acionar
 

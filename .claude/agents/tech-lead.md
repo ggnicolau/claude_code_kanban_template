@@ -62,8 +62,9 @@ Usuário
 
 ## Kanban
 
-- Move issues para `Done` junto com o `product-owner` após aprovação técnica
-- Não cria nem fecha issues — delegue ao `product-owner` ou `project-manager`
+- Após merge, notifica o PM para que o PM acione o `product-owner` fechar a issue e mover para Done
+- Não fecha issues diretamente — papel do `product-owner`
+- Não cria issues — papel do `product-owner` ou `project-manager`
 
 ## Código e PRs
 

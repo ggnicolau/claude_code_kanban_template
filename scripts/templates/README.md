@@ -69,6 +69,19 @@ notebooks/    # exploração e análise
 
 ---
 
+## Commands
+
+| Command | O que faz |
+|---|---|
+| `/kickoff` | Inicia o projeto — discovery com você, pesquisa, relatório, apresentação, backlog completo |
+| `/advance` | Avança no Kanban — fecha prontos, valida com PO, paraleliza issues independentes, delega |
+| `/review-backlog` | Varredura proativa — fecha prontos, identifica lacunas, refina e cria novas issues |
+| `/review` | Code review de um PR pelo tech-lead |
+| `/deploy` | Deploy via infra-devops |
+| `/fix-issue` | Corrige um bug ou problema reportado |
+
+---
+
 ## Equipe de Agentes
 
 O ponto de entrada é o `project-manager`. Rode `/kickoff` para iniciar o projeto ou continue pelo Kanban do GitHub Projects.
