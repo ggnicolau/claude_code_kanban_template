@@ -426,10 +426,97 @@ Code/commits/PRs: write normal. Security warnings and destructive op confirmatio
 """
 
 
+CAVEMAN_COMMIT_SKILL_CONTENT = """\
+---
+name: caveman-commit
+description: >
+  Ultra-compressed commit message generator. Conventional Commits format. Subject <= 50 chars,
+  body only when "why" isn't obvious. Use when user says "write a commit", "commit message",
+  "generate commit", "/commit", or invokes /caveman-commit. Auto-triggers when staging changes.
+---
+
+Write commit messages terse and exact. Conventional Commits format. No fluff. Why over what.
+
+## Rules
+
+**Subject line:**
+- `<type>(<scope>): <imperative summary>` - `<scope>` optional
+- Types: `feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `chore`, `build`, `ci`, `style`, `revert`
+- Imperative mood: "add", "fix", "remove" - not "added", "adds", "adding"
+- <=50 chars when possible, hard cap 72
+- No trailing period
+
+**Body (only if needed):**
+- Skip when subject is self-explanatory
+- Add body only for: non-obvious *why*, breaking changes, migration notes, linked issues
+- Wrap at 72 chars. Bullets `-` not `*`
+- Reference issues/PRs at end: `Closes #42`, `Refs #17`
+
+**Never include:**
+- "This commit does X", "I", "we", "now", "currently"
+- "Generated with Claude Code" or any AI attribution
+- Emoji (unless project convention requires)
+
+## Auto-Clarity
+
+Always include body for: breaking changes, security fixes, data migrations, reverts.
+
+## Boundaries
+
+Only generates the message as a code block. Does not run `git commit`. "stop caveman-commit": revert to verbose style.
+"""
+
+CAVEMAN_REVIEW_SKILL_CONTENT = """\
+---
+name: caveman-review
+description: >
+  Ultra-compressed code review comments. Each comment is one line: location, problem, fix.
+  Use when user says "review this PR", "code review", "review the diff", "/review", or
+  invokes /caveman-review. Auto-triggers when reviewing pull requests.
+---
+
+Write code review comments terse and actionable. One line per finding. Location, problem, fix. No throat-clearing.
+
+## Rules
+
+**Format:** `L<line>: <problem>. <fix>.` or `<file>:L<line>: ...` for multi-file diffs.
+
+**Severity prefix:**
+- `red bug:` - broken behavior, will cause incident
+- `yellow risk:` - works but fragile (race, missing null check, swallowed error)
+- `blue nit:` - style, naming, micro-optim. Author can ignore
+- `q:` - genuine question, not a suggestion
+
+**Drop:**
+- "I noticed that...", "It seems like...", "You might want to consider..."
+- "Great work!", "Looks good overall but..."
+- Hedging ("perhaps", "maybe", "I think") - use `q:` instead
+
+**Keep:**
+- Exact line numbers and symbol names in backticks
+- Concrete fix, not "consider refactoring"
+- The *why* if fix isn't obvious
+
+## Auto-Clarity
+
+Drop terse for: CVE-class security findings, architectural disagreements, onboarding contexts.
+
+## Boundaries
+
+Reviews only - does not write the fix, does not approve/request-changes. "stop caveman-review": revert to verbose style.
+"""
+
+
 def install_caveman_skill(destination: Path) -> None:
-    skill_dir = destination / ".agents" / "skills" / "caveman"
-    skill_dir.mkdir(parents=True, exist_ok=True)
-    (skill_dir / "SKILL.md").write_text(CAVEMAN_SKILL_CONTENT, encoding="utf-8")
+    skills_base = destination / ".agents" / "skills"
+    for name, content in [
+        ("caveman", CAVEMAN_SKILL_CONTENT),
+        ("caveman-commit", CAVEMAN_COMMIT_SKILL_CONTENT),
+        ("caveman-review", CAVEMAN_REVIEW_SKILL_CONTENT),
+    ]:
+        skill_dir = skills_base / name
+        skill_dir.mkdir(parents=True, exist_ok=True)
+        (skill_dir / "SKILL.md").write_text(content, encoding="utf-8")
 
 
 def ensure_repo_absent(env: dict[str, str], full_name: str) -> None:
