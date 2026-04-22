@@ -48,18 +48,18 @@ Salve em `docs/relatorio.md`. Este documento é a fonte de verdade do projeto.
 
 ---
 
-## Fase 4 — Apresentação (`product-owner`)
+## Fase 4 — Apresentação (você, PM, produz)
 
-Com o relatório pronto, acione o `product-owner` via subagente (`Task`) para produzir a apresentação executiva.
+Com o relatório pronto, **você (PM) produz** a apresentação executiva em `docs/apresentacao.md`.
 
-O `product-owner` deve criar `docs/apresentacao.md` com:
+Use `anthropic-skills:pptx` para PowerPoint ou escreva em Markdown se o projeto não tiver frontend. A apresentação deve conter:
 - Problema e oportunidade
 - Solução proposta e diferenciais
 - Público-alvo e personas
 - Roadmap macro
 - Métricas de sucesso
 
-A apresentação é um entregável **separado** do relatório — formato de deck, linguagem executiva, não técnica.
+A apresentação é um entregável **separado** do relatório — formato de deck, linguagem executiva, não técnica. Você não delega isso ao `product-owner`.
 
 ---
 
