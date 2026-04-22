@@ -21,6 +21,10 @@ graph TD
     TL --> QA["✅ QA\ntestes + qualidade"]
     TL --> RES
     TL --> SEC["🔒 Security Auditor\nsegurança + vulnerabilidades"]
+    TL --> FE["🖥️ Frontend Engineer\nweb + UI + UX"]
+
+    FE --> IDF
+    FE --> RES
 
     MLE --> DE
     MLE --> RES
