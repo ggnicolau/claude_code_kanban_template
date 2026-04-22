@@ -149,6 +149,16 @@ O `product-owner` garante que o backlog cobre **todas** as dimensões:
 
 Regra central: **nenhum agente faz merge do próprio trabalho sem aprovação do `tech-lead`**.
 
+### Cleanup obrigatório após merge
+
+Após todo merge confirmado, o agente que executou o trabalho **deve** rodar no workspace local:
+
+```bash
+git checkout main && git pull && git branch -D <nome-do-branch>
+```
+
+Isso garante que o workspace local volta para `main` atualizada e o branch de feature é removido. Sem este passo, o Claude Code exibe o banner de branch stale permanentemente.
+
 ---
 
 ## Commands Disponíveis
