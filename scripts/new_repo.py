@@ -618,6 +618,11 @@ def parse_args(argv: Iterable[str]) -> argparse.Namespace:
     )
     parser.add_argument("--description", default=None, help="Descricao do repositorio.")
     parser.add_argument(
+        "--template-branch",
+        default=None,
+        help="Branch do template a usar como base do repo novo. Default: branch atual do template.",
+    )
+    parser.add_argument(
         "--skip-secret",
         action="store_true",
         help="Nao configura o secret GH_PAT no repositorio novo.",
@@ -657,6 +662,17 @@ def parse_args(argv: Iterable[str]) -> argparse.Namespace:
     return parser.parse_args(list(argv))
 
 
+def detect_template_branch() -> str:
+    result = subprocess.run(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    return result.stdout.strip() or "main"
+
+
 def is_interactive() -> bool:
     return sys.stdin.isatty()
 
@@ -676,9 +692,10 @@ def main(argv: Iterable[str] | None = None) -> int:
     prompt_enabled = should_prompt(args, interactive)
     template_repo = parse_origin_repo(env)
     owner = template_repo.split("/", maxsplit=1)[0]
+    template_branch = args.template_branch or detect_template_branch()
 
     print("Wizard de criacao de repositorio")
-    print(f"- Template atual: {template_repo}")
+    print(f"- Template atual: {template_repo} (branch: {template_branch})")
 
     repo_name = build_repo_name(
         args.name or prompt_text("Nome do novo repositorio", required=True)
@@ -792,21 +809,39 @@ def main(argv: Iterable[str] | None = None) -> int:
         if clone_locally:
             ensure_local_clone_absent(local_clone_path)
 
-        create_command = [
-            "gh",
-            "repo",
-            "create",
-            full_name,
-            "--template",
-            template_repo,
-            f"--{visibility}",
-        ]
-        if not clone_locally:
-            create_command.append("--clone=false")
-        if description:
-            create_command.extend(["--description", description])
-
-        repo_url = run_command(create_command, env)
+        if template_branch == "main":
+            create_command = [
+                "gh",
+                "repo",
+                "create",
+                full_name,
+                "--template",
+                template_repo,
+                f"--{visibility}",
+            ]
+            if not clone_locally:
+                create_command.append("--clone=false")
+            if description:
+                create_command.extend(["--description", description])
+            repo_url = run_command(create_command, env)
+        else:
+            create_command = [
+                "gh",
+                "repo",
+                "create",
+                full_name,
+                f"--{visibility}",
+                "--clone=false",
+            ]
+            if description:
+                create_command.extend(["--description", description])
+            repo_url = run_command(create_command, env)
+            push_url = f"https://github.com/{full_name}.git"
+            run_command(
+                ["git", "push", push_url, f"{template_branch}:main"],
+                env,
+            )
+            print(f"- Conteudo do branch '{template_branch}' publicado como main.")
         print(f"\nRepositorio criado: {repo_url}")
 
         if clone_locally:
