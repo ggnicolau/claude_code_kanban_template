@@ -19,439 +19,67 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh label create "backlog"      --color "ededed" --description "Ideias e tarefas futuras"  --repo ${{ github.repository }} --force
-          gh label create "todo"         --color "0075ca" --description "Proximas a fazer"          --repo ${{ github.repository }} --force
-          gh label create "in-progress"  --color "e4e669" --description "Em andamento"              --repo ${{ github.repository }} --force
-          gh label create "review"       --color "d93f0b" --description "Aguardando revisao"        --repo ${{ github.repository }} --force
-          gh label create "done"         --color "0e8a16" --description "Concluido"                 --repo ${{ github.repository }} --force
-
-      - name: Criar issue de Getting Started
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          EXISTING_ISSUE_NUMBER=$(gh issue list \
-            --repo ${{ github.repository }} \
-            --state open \
-            --search '"Getting Started" in:title' \
-            --json number,title \
-            --jq 'map(select(.title == "Getting Started")) | first.number // empty')
-
-          if [ -n "$EXISTING_ISSUE_NUMBER" ]; then
-            ISSUE_NUMBER="$EXISTING_ISSUE_NUMBER"
-            echo "Issue existente encontrada: #$ISSUE_NUMBER"
-          else
-            ISSUE_BODY=$'## Setup inicial\n\n- [ ] Renomear `project-name` em `pyproject.toml`\n- [ ] Criar `.mcp.json` a partir de `.mcp.json.example` (nao commitar)\n- [ ] Criar `CLAUDE.local.md` a partir de `CLAUDE.local.md.example` (nao commitar)\n- [ ] Rodar `uv sync` para instalar dependencias\n- [ ] Abrir o projeto no Claude Code: `claude`\n\n> Este issue foi criado automaticamente pelo workflow Setup Kanban.'
-
-            ISSUE_NUMBER=$(gh api repos/${{ github.repository }}/issues \
-              -f title='Getting Started' \
-              -f labels[]=todo \
-              -f body="$ISSUE_BODY" \
-              --jq '.number')
-            echo "Issue criada: #$ISSUE_NUMBER"
-          fi
-
-          ISSUE_NODE_ID=$(gh issue view "$ISSUE_NUMBER" --repo ${{ github.repository }} --json id --jq '.id')
-          echo "GETTING_STARTED_ISSUE_NUMBER=$ISSUE_NUMBER" >> "$GITHUB_ENV"
-          echo "GETTING_STARTED_ISSUE_NODE_ID=$ISSUE_NODE_ID" >> "$GITHUB_ENV"
+          gh label create "todo"         --color "0075ca" --description "Próximas a fazer"           --repo ${{ github.repository }} --force
+          gh label create "in-progress" --color "e4e669" --description "Em andamento"               --repo ${{ github.repository }} --force
+          gh label create "review"       --color "d93f0b" --description "Aguardando revisão"         --repo ${{ github.repository }} --force
+          gh label create "done"         --color "0e8a16" --description "Concluído"                  --repo ${{ github.repository }} --force
 
       - name: Criar GitHub Project board
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          if [ -z "$GH_TOKEN" ]; then
-            echo "GH_PAT nao configurado; pulando criacao do GitHub Project board."
-            exit 0
-          fi
+          OWNER_ID=$(gh api graphql -f query='query { viewer { id } }' --jq '.data.viewer.id')
 
-          API_HEADERS=(
-            -H "Accept: application/vnd.github+json"
-            -H "X-GitHub-Api-Version: 2026-03-10"
-          )
-
-          OWNER_LOGIN=$(gh api user --jq '.login')
-          OWNER_NODE_ID=$(gh api graphql -f query='query { viewer { id } }' --jq '.data.viewer.id')
-          REPO_OWNER="${GITHUB_REPOSITORY%%/*}"
-          REPO_NAME="${GITHUB_REPOSITORY#*/}"
-          PROJECT_TITLE="${REPO_NAME} Kanban"
-          REPO_NODE_ID=$(gh api graphql -f query='
-            query($owner: String!, $name: String!) {
-              repository(owner: $owner, name: $name) {
-                id
+          PROJECT_DATA=$(gh api graphql -f query="
+            mutation {
+              createProjectV2(input: {ownerId: \"$OWNER_ID\", title: \"Kanban\"}) {
+                projectV2 { id url }
               }
             }
-          ' -f owner="$REPO_OWNER" -f name="$REPO_NAME" --jq '.data.repository.id')
+          ")
 
-          EXISTING_PROJECT=$(gh api graphql -f query="
-            query {
-              viewer {
-                projectsV2(first: 100, orderBy: {field: TITLE, direction: ASC}) {
-                  nodes {
-                    id
-                    title
-                    url
-                    closed
-                  }
-                }
-              }
-            }
-          " --jq ".data.viewer.projectsV2.nodes[] | select(.title == \"$PROJECT_TITLE\" and (.closed | not))" || true)
+          PROJECT_ID=$(echo "$PROJECT_DATA" | jq -r '.data.createProjectV2.projectV2.id')
+          PROJECT_URL=$(echo "$PROJECT_DATA" | jq -r '.data.createProjectV2.projectV2.url')
+          echo "Project criado: $PROJECT_URL"
 
-          if [ -n "$EXISTING_PROJECT" ]; then
-            PROJECT_ID=$(echo "$EXISTING_PROJECT" | jq -r '.id')
-            PROJECT_URL=$(echo "$EXISTING_PROJECT" | jq -r '.url')
-            echo "Project existente encontrado: $PROJECT_URL"
-          else
-            PROJECT_DATA=$(gh api graphql -f query='
-              mutation($owner: ID!, $title: String!) {
-                createProjectV2(input: { ownerId: $owner, title: $title }) {
-                  projectV2 {
-                    id
-                    url
-                  }
-                }
-              }
-            ' -F owner="$OWNER_NODE_ID" -F title="$PROJECT_TITLE")
+          # Busca o campo Status já existente no projeto (Projects V2 cria um por padrão)
+          STATUS_FIELD_ID=$(gh api graphql -f query="
+            query { node(id: \"$PROJECT_ID\") { ... on ProjectV2 { fields(first: 20) { nodes {
+              ... on ProjectV2SingleSelectField { id name }
+            }}}}}
+          " --jq '.data.node.fields.nodes[] | select(.name == "Status") | .id')
 
-            PROJECT_ID=$(echo "$PROJECT_DATA" | jq -r '.data.createProjectV2.projectV2.id')
-            PROJECT_URL=$(echo "$PROJECT_DATA" | jq -r '.data.createProjectV2.projectV2.url')
-            echo "Project criado: $PROJECT_URL"
-          fi
-
-          PROJECT_ALREADY_LINKED=$(gh api graphql -f query='
-            query($project: ID!) {
-              node(id: $project) {
-                ... on ProjectV2 {
-                  repositories(first: 20) {
-                    nodes {
-                      nameWithOwner
-                    }
-                  }
-                }
-              }
-            }
-          ' -F project="$PROJECT_ID" --jq ".data.node.repositories.nodes[]?.nameWithOwner | select(. == \"$GITHUB_REPOSITORY\")" || true)
-
-          if [ -n "$PROJECT_ALREADY_LINKED" ]; then
-            echo "Project ja esta listado na aba Projects do repositorio."
-          else
-            gh api graphql -f query='
-              mutation($project: ID!, $repository: ID!) {
-                linkProjectV2ToRepository(input: { projectId: $project, repositoryId: $repository }) {
-                  repository {
-                    id
-                    nameWithOwner
-                  }
-                }
-              }
-            ' -F project="$PROJECT_ID" -F repository="$REPO_NODE_ID" >/dev/null
-            echo "Project vinculado ao repositorio."
-          fi
-
-          PROJECT_NUMBER="${PROJECT_URL##*/}"
-          FIELDS_JSON=$(gh api "/users/$OWNER_LOGIN/projectsV2/$PROJECT_NUMBER/fields" "${API_HEADERS[@]}")
-
-          STATUS_FIELD_NODE_ID=$(echo "$FIELDS_JSON" | jq -r '.[] | select(.name == "Status") | .node_id')
-
-          if [ -z "$STATUS_FIELD_NODE_ID" ]; then
-            echo "Campo Status nao encontrado."
-            exit 1
-          fi
-
-          UPDATED_OPTIONS_JSON=$(echo "$FIELDS_JSON" | jq -c '
-            (map(select(.name == "Status")) | first | .options) as $options
-            | ($options | map({
-                name: .name.raw,
-                color: .color,
-                description: .description.raw
-              }))
-            + (if any($options[]?; .name.raw == "Backlog") then [] else [{
-                name: "Backlog",
-                color: "GRAY",
-                description: "Ideias e tarefas futuras"
-              }] end)
-            + (if any($options[]?; .name.raw == "Review") then [] else [{
-                name: "Review",
-                color: "RED",
-                description: "Aguardando revisao"
-              }] end)
-            | unique_by(.name)
-          ')
-
-          NEEDS_STATUS_UPDATE=$(echo "$FIELDS_JSON" | jq -r '
-            (map(select(.name == "Status")) | first | [ .options[]?.name.raw ]) as $names
-            | if ($names | index("Backlog")) == null or ($names | index("Review")) == null
-              then "true"
-              else "false"
-              end
-          ')
-
-          if [ "$NEEDS_STATUS_UPDATE" = "true" ]; then
-            UPDATED_OPTIONS_GRAPHQL=$(echo "$UPDATED_OPTIONS_JSON" | jq -r '
-              map(
-                "{name: \"" + .name
-                + "\", color: " + .color
-                + ", description: \"" + (.description | gsub("\\\\"; "\\\\\\\\") | gsub("\""; "\\\\\""))
-                + "\"}"
-              ) | join(", ")
-            ')
-
+          # Adiciona Backlog e Review ao campo Status existente
+          for OPTION in \
+            'Backlog|GRAY|Ideias e tarefas futuras' \
+            'Review|RED|Aguardando revisão'; do
+            NAME=$(echo $OPTION | cut -d'|' -f1)
+            COLOR=$(echo $OPTION | cut -d'|' -f2)
+            DESC=$(echo $OPTION | cut -d'|' -f3)
             gh api graphql -f query="
               mutation {
-                updateProjectV2Field(input: {
-                  fieldId: \"$STATUS_FIELD_NODE_ID\",
-                  singleSelectOptions: [ $UPDATED_OPTIONS_GRAPHQL ]
-                }) {
-                  projectV2Field {
-                    ... on ProjectV2SingleSelectField {
-                      id
-                      name
-                    }
-                  }
-                }
+                addProjectV2SingleSelectFieldOptionToField(input: {
+                  projectId: \"$PROJECT_ID\", fieldId: \"$STATUS_FIELD_ID\",
+                  name: \"$NAME\", color: $COLOR, description: \"$DESC\"
+                }) { field { ... on ProjectV2SingleSelectField { options { name } } } }
               }
-            " >/dev/null
+            " || true
+          done
 
-            FIELDS_JSON=$(gh api "/users/$OWNER_LOGIN/projectsV2/$PROJECT_NUMBER/fields" "${API_HEADERS[@]}")
-          else
-            echo "Campo Status ja contem Backlog e Review; pulando atualizacao."
-          fi
+      - name: Criar issue de Getting Started
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --repo ${{ github.repository }} \
+            --title "🚀 Getting Started" \
+            --label "todo" \
+            --body "## Setup inicial
 
-          TITLE_FIELD_ID=$(echo "$FIELDS_JSON" | jq -r '.[] | select(.name == "Title") | .id')
-          ASSIGNEES_FIELD_ID=$(echo "$FIELDS_JSON" | jq -r '.[] | select(.name == "Assignees") | .id // empty')
-          STATUS_FIELD_ID=$(echo "$FIELDS_JSON" | jq -r '.[] | select(.name == "Status") | .id')
-          LABELS_FIELD_ID=$(echo "$FIELDS_JSON" | jq -r '.[] | select(.name == "Labels") | .id // empty')
-          TODO_OPTION_ID=$(echo "$FIELDS_JSON" | jq -r '.[] | select(.name == "Status") | .options[] | select(.name.raw == "Todo") | .id // empty')
+          - [ ] Renomear \`project-name\` em \`pyproject.toml\`
+          - [ ] Criar \`.mcp.json\` a partir de \`.mcp.json.example\` (não commitar)
+          - [ ] Criar \`CLAUDE.local.md\` a partir de \`CLAUDE.local.md.example\` (não commitar)
+          - [ ] Rodar \`uv sync\` para instalar dependências
+          - [ ] Abrir o projeto no Claude Code: \`claude\`
 
-          EXISTING_VIEWS_JSON=$(gh api graphql -f query='
-            query($number: Int!) {
-              viewer {
-                projectV2(number: $number) {
-                  views(first: 20) {
-                    nodes {
-                      name
-                      layout
-                    }
-                  }
-                }
-              }
-            }
-          ' -F number="$PROJECT_NUMBER")
-
-          create_view_if_missing() {
-            local view_name="$1"
-            local layout="$2"
-            local filter_query="${3:-}"
-
-            if echo "$EXISTING_VIEWS_JSON" | jq -e --arg name "$view_name" '.data.viewer.projectV2.views.nodes[]? | select(.name == $name)' >/dev/null; then
-              echo "View $view_name ja existe; pulando."
-              return
-            fi
-
-            local args=(
-              -X POST
-              "/users/$OWNER_LOGIN/projectsV2/$PROJECT_NUMBER/views"
-              "${API_HEADERS[@]}"
-              -f "name=$view_name"
-              -f "layout=$layout"
-              -F "visible_fields[]=$TITLE_FIELD_ID"
-              -F "visible_fields[]=$STATUS_FIELD_ID"
-            )
-
-            if [ -n "$ASSIGNEES_FIELD_ID" ]; then
-              args+=(-F "visible_fields[]=$ASSIGNEES_FIELD_ID")
-            fi
-
-            if [ -n "$LABELS_FIELD_ID" ]; then
-              args+=(-F "visible_fields[]=$LABELS_FIELD_ID")
-            fi
-
-            if [ -n "$filter_query" ]; then
-              args+=(-f "filter=$filter_query")
-            fi
-
-            gh api "${args[@]}" >/dev/null
-            echo "View criada: $view_name"
-          }
-
-          create_view_if_missing "Board" "board"
-          create_view_if_missing "Table" "table"
-          create_view_if_missing "Done" "table" "status:Done"
-
-          # Helper: adiciona issue ao projeto e seta status
-          add_issue_to_project() {
-            local ISSUE_NODE_ID="$1"
-            local STATUS_OPTION_ID="$2"
-
-            local ITEM_ID
-            ITEM_ID=$(gh api graphql -f query='
-              mutation($project: ID!, $content: ID!) {
-                addProjectV2ItemById(input: { projectId: $project, contentId: $content }) {
-                  item { id }
-                }
-              }
-            ' -F project="$PROJECT_ID" -F content="$ISSUE_NODE_ID" --jq '.data.addProjectV2ItemById.item.id')
-
-            if [ -n "$STATUS_OPTION_ID" ] && [ -n "$ITEM_ID" ]; then
-              gh api graphql -f query='
-                mutation($project: ID!, $item: ID!, $field: ID!, $option: String!) {
-                  updateProjectV2ItemFieldValue(input: {
-                    projectId: $project, itemId: $item,
-                    fieldId: $field, value: { singleSelectOptionId: $option }
-                  }) { projectV2Item { id } }
-                }
-              ' -F project="$PROJECT_ID" -F item="$ITEM_ID" \
-                -F field="$STATUS_FIELD_NODE_ID" -F option="$STATUS_OPTION_ID" >/dev/null
-            fi
-          }
-
-          BACKLOG_OPTION_ID=$(echo "$FIELDS_JSON" | jq -r '.[] | select(.name == "Status") | .options[] | select(.name.raw == "Backlog") | .id // empty')
-
-          # Adicionar Getting Started ao projeto (Todo)
-          if [ -n "${GETTING_STARTED_ISSUE_NODE_ID:-}" ]; then
-            add_issue_to_project "$GETTING_STARTED_ISSUE_NODE_ID" "$TODO_OPTION_ID"
-          fi
-
-          # -------------------------------------------------------
-          # Épicos e issues template — populam o backlog inicial
-          # O product-owner e project-manager refinam durante o /kickoff
-          # -------------------------------------------------------
-
-          create_issue_in_project() {
-            local TITLE="$1"
-            local BODY="$2"
-            local LABEL="$3"
-            local STATUS_OPTION_ID="$4"
-
-            local ISSUE_NUM
-            ISSUE_NUM=$(gh api repos/${{ github.repository }}/issues \
-              -f title="$TITLE" \
-              -f labels[]="$LABEL" \
-              -f body="$BODY" \
-              --jq '.number')
-
-            local NODE_ID
-            NODE_ID=$(gh issue view "$ISSUE_NUM" --repo ${{ github.repository }} --json id --jq '.id')
-            add_issue_to_project "$NODE_ID" "$STATUS_OPTION_ID"
-            echo "Issue criada: #$ISSUE_NUM — $TITLE"
-          }
-
-          # --- ÉPICO: Discovery ---
-          create_issue_in_project \
-            "[ÉPICO] Discovery — Entendimento do problema" \
-            "Antes de qualquer execução, o projeto precisa ter clareza sobre o problema que resolve, para quem e como o sucesso será medido.
-
-          - [ ] Definir Problem Statement (1 parágrafo)
-          - [ ] Identificar usuários e stakeholders
-          - [ ] Definir critério de sucesso / métricas
-          - [ ] Mapear soluções existentes e diferenciais
-          - [ ] Validar premissas com usuários reais (se aplicável)
-
-          > Responsável: \`product-owner\` com apoio do \`researcher\`" \
-            "backlog" "$TODO_OPTION_ID"
-
-          create_issue_in_project \
-            "Pesquisa de mercado e benchmarks" \
-            "Levantar soluções existentes, benchmarks relevantes e referências do setor para embasar decisões de produto e tech.
-
-          > Responsável: \`researcher\`" \
-            "backlog" "$BACKLOG_OPTION_ID"
-
-          # --- ÉPICO: Negócio ---
-          create_issue_in_project \
-            "[ÉPICO] Negócio — Identidade, pitch e apresentação" \
-            "Todo projeto precisa saber se apresentar. Este épico cobre os entregáveis de negócio que existem independente do código.
-
-          - [ ] Naming e identidade do projeto
-          - [ ] Pitch deck (problema → solução → impacto)
-          - [ ] Apresentação para stakeholders
-          - [ ] Definição de canais de comunicação
-
-          > Responsável: \`product-owner\`" \
-            "backlog" "$TODO_OPTION_ID"
-
-          create_issue_in_project \
-            "Criar pitch deck do projeto" \
-            "Apresentação de 5–8 slides cobrindo: problema, solução, como funciona, impacto esperado, próximos passos.
-
-          > Responsável: \`product-owner\`" \
-            "backlog" "$BACKLOG_OPTION_ID"
-
-          create_issue_in_project \
-            "Definir naming, identidade e canais de divulgação" \
-            "Decidir nome público do projeto, identidade visual básica (paleta, tom de voz) e onde/como será divulgado.
-
-          > Responsável: \`product-owner\`" \
-            "backlog" "$BACKLOG_OPTION_ID"
-
-          # --- ÉPICO: Produto ---
-          create_issue_in_project \
-            "[ÉPICO] Produto — MVP, personas e roadmap" \
-            "Definição clara do que é o MVP, quem usa e qual é o caminho de evolução do produto.
-
-          - [ ] Definir personas (1–2 principais)
-          - [ ] Mapear jornada do usuário no MVP
-          - [ ] Definir escopo do MVP (o que está dentro e fora)
-          - [ ] Esboçar roadmap de médio prazo (3–6 meses)
-
-          > Responsável: \`product-owner\`" \
-            "backlog" "$TODO_OPTION_ID"
-
-          create_issue_in_project \
-            "Definir e documentar personas do projeto" \
-            "Criar 1–2 personas principais com: perfil, necessidades, frustrações e como o projeto resolve o problema delas.
-
-          > Responsável: \`product-owner\`" \
-            "backlog" "$BACKLOG_OPTION_ID"
-
-          create_issue_in_project \
-            "Definir escopo do MVP e roadmap inicial" \
-            "Listar funcionalidades do MVP (in/out), critério de done para o MVP, e esboço de roadmap pós-MVP.
-
-          > Responsável: \`product-owner\` + \`tech-lead\`" \
-            "backlog" "$BACKLOG_OPTION_ID"
-
-          # --- ÉPICO: Tech Setup ---
-          create_issue_in_project \
-            "[ÉPICO] Tech Setup — Fundação técnica do projeto" \
-            "Configurações técnicas iniciais que habilitam o trabalho de desenvolvimento.
-
-          - [ ] Definir arquitetura e stack
-          - [ ] Configurar ambiente local (dependências, .env)
-          - [ ] Configurar CI/CD
-          - [ ] Definir estrutura de pastas e convenções
-
-          > Responsável: \`tech-lead\` + \`infra-devops\`" \
-            "backlog" "$TODO_OPTION_ID"
-
-          create_issue_in_project \
-            "Definir arquitetura e documentar decisões técnicas (ADR)" \
-            "Documentar as principais decisões de arquitetura: linguagem, frameworks, integrações, padrões de código.
-
-          > Responsável: \`tech-lead\`" \
-            "backlog" "$BACKLOG_OPTION_ID"
-
-          # --- ÉPICO: Lançamento ---
-          create_issue_in_project \
-            "[ÉPICO] Lançamento — Estratégia de divulgação e go-to-market" \
-            "Plano para colocar o projeto na frente das pessoas certas após o MVP estar pronto.
-
-          - [ ] Definir canais de lançamento
-          - [ ] Preparar materiais de divulgação
-          - [ ] Definir métricas de acompanhamento pós-lançamento
-          - [ ] Planejar feedback loop com usuários
-
-          > Responsável: \`product-owner\`" \
-            "backlog" "$BACKLOG_OPTION_ID"
-
-          # --- ÉPICO: Operações ---
-          create_issue_in_project \
-            "[ÉPICO] Operações — Monitoramento e manutenção" \
-            "Garantir que o projeto funcione de forma contínua e que falhas sejam detectadas antes do usuário perceber.
-
-          - [ ] Configurar logs e alertas
-          - [ ] Definir processo de atualização e manutenção
-          - [ ] Documentar runbook de incidentes
-
-          > Responsável: \`infra-devops\` + \`qa\`" \
-            "backlog" "$BACKLOG_OPTION_ID"
-
-          echo "Backlog template criado com sucesso."
+          > Este issue foi criado automaticamente pelo workflow Setup Kanban."
