@@ -185,9 +185,14 @@ TEMPLATE_ONLY_FILES = [
     "AGENTS.md",
 ]
 
+TEMPLATE_ONLY_DIRS = [
+    "scripts/templates",
+]
+
 
 def cleanup_template_files(destination: Path, repo_name: str) -> None:
     """Remove arquivos de template e gera CLAUDE.md e AGENTS.md para o projeto."""
+    import shutil
     import subprocess
 
     # Remove arquivos específicos do template
@@ -196,6 +201,13 @@ def cleanup_template_files(destination: Path, repo_name: str) -> None:
         target = destination / rel_path
         if target.exists():
             target.unlink()
+            removed.append(rel_path)
+
+    # Remove diretórios exclusivos do template
+    for rel_path in TEMPLATE_ONLY_DIRS:
+        target = destination / rel_path
+        if target.exists():
+            shutil.rmtree(target)
             removed.append(rel_path)
 
     # Gera CLAUDE.md e AGENTS.md a partir dos templates
