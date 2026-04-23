@@ -13,3 +13,18 @@ CLAUDE.local.md
 
 # Artefatos locais do Python
 __pycache__/
+*.pyc
+*.pyo
+
+# Node
+node_modules/
+package-lock.json
+
+# Arquivos temporários / gerados localmente
+docs.zip
+*.zip
+docs/business/assets/.~lock.*
+docs/business/assets/slide-*.jpg
+docs/business/assets/fix-slide-*.jpg
+docs/business/assets/onpet_pitch.png
+docs/business/assets/onpet_pitch.pdf
