@@ -44,6 +44,61 @@ feature/* → dev → main
 - Merges de `feature/*` → `dev`: usar `gh pr merge --merge --delete-branch` (feature branches são descartáveis)
 - Merges de `dev` → `main`: usar `gh pr merge --merge` **sem** `--delete-branch` (dev é permanente)
 
+### Cleanup obrigatório após merge
+
+**Após merge de feature → dev:**
+```bash
+git checkout dev && git pull && git branch -D <nome-do-branch> 2>/dev/null || true
+```
+
+**Após merge de dev → main:**
+```bash
+git checkout main && git pull origin main && git checkout dev && git merge main --no-edit && git push origin dev
+```
+
+O `git merge main` final é obrigatório — traz o commit de merge para o dev e evita o banner de divergência no Claude Code. Sem esse passo o workspace fica sujo.
+
+### Push direto em dev (documentação e skills)
+
+Alterações em `docs/`, `.agents/skills/`, arquivos `.md` de agentes e commands do template podem ser commitadas e pusadas diretamente em `dev` — sem branch, sem PR.
+
+```bash
+git add <arquivo>
+git commit -m "..."
+git push origin dev
+```
+
+Nunca push direto em `main`.
+
+### Autenticação GitHub
+
+Dois mecanismos disponíveis:
+
+| Ferramenta | Como autentica | Quando usar |
+|---|---|---|
+| `gh` CLI | `GH_TOKEN` do `.env` | merge, delete-branch, PR, issues via terminal |
+| MCP GitHub | token do `.mcp.json` (automático) | operações via ferramentas MCP do Claude |
+
+**Antes de usar `gh` CLI**, carregue o token:
+```bash
+export GH_TOKEN=$(grep GH_TOKEN .env | cut -d= -f2)
+```
+
+**Nunca usar** `gh auth login` — as permissões bloqueiam esse comando. O `GH_TOKEN` no `.env` é o mecanismo correto.
+
+### Resolver banner de divergência no Claude Code
+
+Se aparecer o banner "branch diverged from remote", significa que dev local está dessincronizado com o remoto após um merge de main. Solução:
+
+```bash
+git checkout dev && git pull origin dev
+```
+
+Se ainda divergir após merge de dev → main:
+```bash
+git checkout dev && git merge main --no-edit && git push origin dev
+```
+
 ## Iniciar
 
 Use `/wizard` para criar um novo projeto filho.
