@@ -22,9 +22,13 @@ Para cada projeto, compare com o template:
 
 **Arquivos do template (fonte de verdade):**
 - `.claude/agents/*.md`
-- `.claude/commands/*.md` — exceto `wizard.md`, `sync-to-projects.md` e `sync-to-template.md`
+- `.claude/commands/*.md` — exceto `wizard.md`, `sync-to-projects.md`, `sync-to-template.md` e `sync-master.md`
 - `scripts/templates/commands/*.md` → todos comparados contra `.claude/commands/` do filho (esses commands chegam no filho via wizard, não via `.claude/commands/` do template — qualquer novo arquivo adicionado a esta pasta é automaticamente incluído)
 - `.agents/skills/**` — exceto qualquer pasta com nome iniciando em `caveman`
+- `scripts/hooks/session_start.sh` → comparado contra `scripts/hooks/session_start.sh` do filho
+- `scripts/hooks/post_write.sh` → comparado contra `scripts/hooks/post_write.sh` do filho
+- `.gitattributes` → comparado contra `.gitattributes` do filho
+- `scripts/templates/.gitattributes` → comparado contra `scripts/templates/.gitattributes` do filho
 - `scripts/templates/CLAUDE.md` → comparado contra `CLAUDE.md` do filho (substituindo `{repo_name}` pelo nome do projeto antes de comparar)
 - `scripts/templates/AGENTS.md` → comparado contra `AGENTS.md` do filho (substituindo `{repo_name}` pelo nome do projeto antes de comparar)
 

@@ -143,6 +143,7 @@ Flags úteis:
     clean.md                 # /clean — herdado pelo filho
     sync-to-projects.md      # /sync-to-projects — propaga template → filhos (exclusivo do pai)
     sync-to-template.md     # /sync-to-template — propaga filho → template (exclusivo do pai)
+    sync-master.md         # /sync-master — sincroniza camada universal entre templates irmãos
   settings.json              # permissões e operações bloqueadas
 scripts/
   new_repo.py                # lógica do wizard

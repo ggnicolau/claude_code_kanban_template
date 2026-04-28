@@ -1,4 +1,4 @@
-# Wizard — Criar Novo Repositório Enterprise
+# Wizard — Criar Novo Projeto Filho
 
 **Antes de qualquer pergunta**, verifique se o `gh` CLI está instalado e autenticado.
 
@@ -103,7 +103,7 @@ $ARGUMENTS
 
 Informe ao usuário:
 
-> "Repositório enterprise criado. Agora vamos iniciar o projeto corretamente."
+> "Projeto filho criado. Agora vamos iniciar o projeto corretamente."
 
 Execute imediatamente o comando `/kickoff`.
 

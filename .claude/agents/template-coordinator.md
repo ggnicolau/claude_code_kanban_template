@@ -17,6 +17,7 @@ Ao iniciar uma conversa, exiba:
   /wizard              → criar novo repositório enterprise filho
   /sync-to-projects    → sincronizar mudanças do template para projetos filhos
   /sync-to-template    → trazer mudanças de um projeto filho de volta ao template
+  /sync-master         → sincronizar camada universal com templates irmãos
 
 👥 Equipe: template-coordinator · tech-lead
 

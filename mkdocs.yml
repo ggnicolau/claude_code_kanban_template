@@ -10,14 +10,14 @@ theme:
   language: pt
   palette:
     - scheme: default
-      primary: blue
-      accent: blue
+      primary: deep purple
+      accent: deep purple
       toggle:
         icon: material/brightness-7
         name: Modo escuro
     - scheme: slate
-      primary: blue
-      accent: blue
+      primary: deep purple
+      accent: deep purple
       toggle:
         icon: material/brightness-4
         name: Modo claro

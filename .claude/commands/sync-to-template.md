@@ -22,9 +22,13 @@ Compare o filho com o template:
 
 **Arquivos comparados (filho é a fonte de avaliação):**
 - `.claude/agents/*.md` → contra `.claude/agents/` do template
-- `.claude/commands/*.md` — exceto `wizard.md`, `sync-to-projects.md` e `sync-to-template.md` → contra `.claude/commands/` do template
+- `.claude/commands/*.md` — exceto `wizard.md`, `sync-to-projects.md`, `sync-to-template.md` e `sync-master.md` → contra `.claude/commands/` do template
 - `.claude/commands/*.md` que correspondam a `scripts/templates/commands/` → contra `scripts/templates/commands/` do template
 - `.agents/skills/**` — exceto pastas `caveman*` → contra `.agents/skills/` do template
+- `scripts/hooks/session_start.sh` → contra `scripts/hooks/session_start.sh` do template
+- `scripts/hooks/post_write.sh` → contra `scripts/hooks/post_write.sh` do template
+- `.gitattributes` → contra `.gitattributes` do template
+- `scripts/templates/.gitattributes` → contra `scripts/templates/.gitattributes` do template
 - `CLAUDE.md` do filho → contra `scripts/templates/CLAUDE.md` (substituindo o nome do projeto por `{repo_name}` antes de comparar)
 - `AGENTS.md` do filho → contra `scripts/templates/AGENTS.md` (substituindo o nome do projeto por `{repo_name}` antes de comparar)
 

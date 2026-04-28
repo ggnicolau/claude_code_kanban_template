@@ -56,6 +56,7 @@ O filho começa com `/kickoff` — que conduz discovery, monta backlog completo 
 | `.claude/commands/wizard.md` | Command `/wizard` — só existe no pai |
 | `.claude/commands/sync-to-projects.md` | Propaga mudanças do template para os projetos filhos |
 | `.claude/commands/sync-to-template.md` | Propaga melhorias de um filho de volta para o template |
+| `.claude/commands/sync-master.md` | Sincroniza camada universal entre templates irmãos |
 
 ## Regras de branches neste template
 

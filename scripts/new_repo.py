@@ -1,32 +1,20 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
 import json
 import os
 import re
 import subprocess
 import sys
 import time
+from collections.abc import Iterable
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
-
 
 ROOT = Path(__file__).resolve().parents[1]
 MCP_CONFIG_PATH = ROOT / ".mcp.json"
 SETUP_KANBAN_WORKFLOW_NAME = "Setup Kanban"
 SETUP_KANBAN_WORKFLOW_FILE = "setup-kanban.yml"
-# IMPORTANTE: Nunca remova escopos deste set sem entender o impacto.
-# Cada escopo é obrigatório para uma parte do wizard:
-#   repo      — criar repositório, push, secrets
-#   read:org  — listar organizações e membros
-#   gist      — requerido pelo gh auth para tokens com permissões completas
-#   workflow  — criar/disparar GitHub Actions workflows
-#   project   — criar e gerenciar GitHub Projects (Kanban)
-# Se o token ativo não tiver um escopo, o wizard exibe instrução para
-# rodar `gh auth refresh --scopes "gist,project,read:org,repo,workflow"`
-# e NUNCA deve remover o escopo da lista para contornar a validação.
-REQUIRED_SCOPES = {"repo", "read:org", "gist", "workflow", "project"}
 
 
 def run_command(command: list[str], env: dict[str, str]) -> str:
@@ -69,6 +57,19 @@ def load_env() -> dict[str, str]:
         if auth_header.startswith("Bearer "):
             env["GH_TOKEN"] = auth_header.removeprefix("Bearer ").strip()
     return env
+
+
+# IMPORTANTE: Nunca remova escopos deste set sem entender o impacto.
+# Cada escopo é obrigatório para uma parte do wizard:
+#   repo      — criar repositório, push, secrets
+#   read:org  — listar organizações e membros
+#   gist      — requerido pelo gh auth para tokens com permissões completas
+#   workflow  — criar/disparar GitHub Actions workflows
+#   project   — criar e gerenciar GitHub Projects (Kanban)
+# Se o token ativo não tiver um escopo, o wizard exibe instrução para
+# rodar `gh auth refresh --scopes "gist,project,read:org,repo,workflow"`
+# e NUNCA deve remover o escopo da lista para contornar a validação.
+REQUIRED_SCOPES = {"repo", "read:org", "gist", "workflow", "project"}
 
 
 def is_gh_installed() -> bool:
@@ -203,7 +204,9 @@ def parse_origin_repo(env: dict[str, str]) -> str:
     origin_url = run_command(["git", "config", "--get", "remote.origin.url"], env)
     match = re.search(r"github\.com[:/](?P<owner>[^/]+)/(?P<repo>[^/.]+)", origin_url)
     if not match:
-        raise RuntimeError("Nao foi possivel identificar o repositorio de origem do template.")
+        raise RuntimeError(
+            "Nao foi possivel identificar o repositorio de origem do template."
+        )
     return f"{match.group('owner')}/{match.group('repo')}"
 
 
@@ -310,6 +313,7 @@ TEMPLATE_ONLY_FILES = [
 
 TEMPLATE_ONLY_DIRS = [
     "scripts/templates",
+    "meta",
 ]
 
 
@@ -338,7 +342,9 @@ def cleanup_template_files(destination: Path, repo_name: str) -> None:
     for tpl_name in ("CLAUDE.md", "AGENTS.md"):
         tpl_path = templates_dir / tpl_name
         if tpl_path.exists():
-            content = tpl_path.read_text(encoding="utf-8").replace("{repo_name}", repo_name)
+            content = tpl_path.read_text(encoding="utf-8").replace(
+                "{repo_name}", repo_name
+            )
             (destination / tpl_name).write_text(content, encoding="utf-8")
 
     # Copia README.md para o filho
@@ -355,15 +361,19 @@ def cleanup_template_files(destination: Path, repo_name: str) -> None:
         dest_commands = destination / ".claude" / "commands"
         dest_commands.mkdir(parents=True, exist_ok=True)
         for cmd_file in commands_dir.glob("*.md"):
-            (dest_commands / cmd_file.name).write_text(cmd_file.read_text(encoding="utf-8"), encoding="utf-8")
+            (dest_commands / cmd_file.name).write_text(
+                cmd_file.read_text(encoding="utf-8"), encoding="utf-8"
+            )
 
-    # Copia agentes de scripts/templates/agents/ para .claude/agents/ do filho
-    agents_dir = templates_dir / "agents"
-    if agents_dir.exists():
+    # Copia agents de scripts/templates/agents/ para .claude/agents/ do filho
+    agents_tpl = templates_dir / "agents"
+    if agents_tpl.exists():
         dest_agents = destination / ".claude" / "agents"
         dest_agents.mkdir(parents=True, exist_ok=True)
-        for agent_file in agents_dir.glob("*.md"):
-            (dest_agents / agent_file.name).write_text(agent_file.read_text(encoding="utf-8"), encoding="utf-8")
+        for agent_file in agents_tpl.glob("*.md"):
+            (dest_agents / agent_file.name).write_text(
+                agent_file.read_text(encoding="utf-8"), encoding="utf-8"
+            )
 
     # Copia package.json do template para o filho (deps do gerador de docs)
     pkg_tpl = templates_dir / "package.json"
@@ -393,10 +403,16 @@ def cleanup_template_files(destination: Path, repo_name: str) -> None:
         )
 
     # Copia arquivos example do template para o filho
-    for example_file in (".env.example", ".mcp.json.example", "CLAUDE.local.md.example"):
+    for example_file in (
+        ".env.example",
+        ".mcp.json.example",
+        "CLAUDE.local.md.example",
+    ):
         src = ROOT / example_file
         if src.exists():
-            (destination / example_file).write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+            (destination / example_file).write_text(
+                src.read_text(encoding="utf-8"), encoding="utf-8"
+            )
 
     # Copia credenciais reais se existirem (gitignored — não vão para o repo)
     for cred_file in (".env", ".mcp.json"):
@@ -404,17 +420,33 @@ def cleanup_template_files(destination: Path, repo_name: str) -> None:
         if src.exists():
             (destination / cred_file).write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
 
-    subprocess.run(["git", "add", "-A"], cwd=destination, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "add", "-A"], cwd=destination, check=True, capture_output=True
+    )
     subprocess.run(
         ["git", "commit", "-m", "chore: initialize project files from template"],
-        cwd=destination, check=True, capture_output=True,
+        cwd=destination,
+        check=True,
+        capture_output=True,
     )
     subprocess.run(["git", "push"], cwd=destination, check=True, capture_output=True)
 
     # Cria branch dev a partir de main
-    subprocess.run(["git", "checkout", "-b", "dev"], cwd=destination, check=True, capture_output=True)
-    subprocess.run(["git", "push", "-u", "origin", "dev"], cwd=destination, check=True, capture_output=True)
-    subprocess.run(["git", "checkout", "main"], cwd=destination, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "checkout", "-b", "dev"],
+        cwd=destination,
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "push", "-u", "origin", "dev"],
+        cwd=destination,
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "checkout", "main"], cwd=destination, check=True, capture_output=True
+    )
 
     if removed:
         print(f"- Arquivos de template removidos: {', '.join(removed)}")
@@ -446,14 +478,18 @@ def resolve_workflow_identifier(
     for attempt in range(retries):
         workflows = list_workflows(env, full_name)
         last_seen = [
-            str(workflow.get("name") or workflow.get("path") or workflow.get("id") or "")
+            str(
+                workflow.get("name") or workflow.get("path") or workflow.get("id") or ""
+            )
             for workflow in workflows
         ]
         for workflow in workflows:
             name = str(workflow.get("name", ""))
             path = str(workflow.get("path", ""))
-            if name == workflow_name or path == expected_path or path.endswith(
-                f"/{expected_path}"
+            if (
+                name == workflow_name
+                or path == expected_path
+                or path.endswith(f"/{expected_path}")
             ):
                 return str(workflow["id"])
         if attempt < retries - 1:
@@ -768,6 +804,135 @@ Reviews only - does not write the fix, does not approve/request-changes. "stop c
 """
 
 
+def install_caveman_skill(destination: Path) -> None:
+    skills_base = destination / ".agents" / "skills"
+    for name, content in [
+        ("caveman", CAVEMAN_SKILL_CONTENT),
+        ("caveman-commit", CAVEMAN_COMMIT_SKILL_CONTENT),
+        ("caveman-review", CAVEMAN_REVIEW_SKILL_CONTENT),
+    ]:
+        skill_dir = skills_base / name
+        skill_dir.mkdir(parents=True, exist_ok=True)
+        (skill_dir / "SKILL.md").write_text(content, encoding="utf-8")
+
+
+def ensure_repo_absent(env: dict[str, str], full_name: str) -> None:
+    result = subprocess.run(
+        ["gh", "repo", "view", full_name, "--json", "nameWithOwner"],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode == 0:
+        raise RuntimeError(f"O repositorio {full_name} ja existe.")
+
+
+def parse_args(argv: Iterable[str]) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Wizard para criar um novo repositorio a partir deste template."
+    )
+    parser.add_argument("--name", help="Nome do novo repositorio.")
+    parser.add_argument(
+        "--visibility",
+        choices=["private", "public"],
+        help="Visibilidade do novo repositorio.",
+    )
+    parser.add_argument("--description", default=None, help="Descricao do repositorio.")
+    parser.add_argument(
+        "--template-branch",
+        default=None,
+        help="Branch do template a usar como base do repo novo. Default: branch atual do template.",
+    )
+    parser.add_argument(
+        "--skip-secret",
+        action="store_true",
+        help="Nao configura o secret GH_PAT no repositorio novo.",
+    )
+    parser.add_argument(
+        "--skip-workflow",
+        action="store_true",
+        help="Nao roda a workflow Setup Kanban apos criar o repositorio.",
+    )
+    parser.add_argument(
+        "--skip-validate",
+        action="store_true",
+        help="Nao roda a validacao final.",
+    )
+    parser.add_argument(
+        "--skip-clone",
+        action="store_true",
+        help="Nao clona o repositorio novo localmente.",
+    )
+    parser.add_argument(
+        "--yes",
+        action="store_true",
+        help="Confirma automaticamente a criacao sem pedir aprovacao final.",
+    )
+    parser.add_argument(
+        "--advanced",
+        action="store_true",
+        help="Modo avancado: gera cloud_guide.md e exibe orientacoes /web-setup + GitHub App.",
+    )
+    parser.add_argument(
+        "--cloud-setup",
+        action="store_true",
+        help="Gera scripts/cloud_setup.sh com instalacao de gh CLI para VM cloud.",
+    )
+    parser.add_argument(
+        "--autocompact",
+        action="store_true",
+        help="Adiciona CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=70 ao settings.json do filho.",
+    )
+    parser.add_argument(
+        "--agent-teams",
+        action="store_true",
+        help="Adiciona CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 ao settings.json do filho.",
+    )
+    parser.add_argument(
+        "--docker",
+        action="store_true",
+        help="Gera docker-compose.yml base para desenvolvimento.",
+    )
+    caveman_group = parser.add_mutually_exclusive_group()
+    caveman_group.add_argument(
+        "--caveman",
+        action="store_true",
+        default=None,
+        help="Instala o skill Caveman no repositorio novo.",
+    )
+    caveman_group.add_argument(
+        "--skip-caveman",
+        action="store_true",
+        help="Nao instala o skill Caveman.",
+    )
+    return parser.parse_args(list(argv))
+
+
+def detect_template_branch() -> str:
+    result = subprocess.run(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    return result.stdout.strip() or "main"
+
+
+def is_interactive() -> bool:
+    return sys.stdin.isatty()
+
+
+def should_confirm_creation(args: argparse.Namespace, interactive: bool) -> bool:
+    return interactive and not args.yes
+
+
+def should_prompt(args: argparse.Namespace, interactive: bool) -> bool:
+    return interactive and not args.yes
+
+
 def generate_cloud_guide(destination: Path, repo_name: str) -> None:
     """Gera docs/setup/cloud_guide.md com instruções para configuração cloud."""
     content = f"""\
@@ -821,7 +986,7 @@ Selecione o ambiente cloud padrão para este projeto (ex.: `default`, ou um ambi
 ```
 Local (desenvolvimento)   →  git push origin dev
 Cloud (execução/revisão)  →  abrir sessão cloud, /advance ou /review
-Cloud (análise pesada)    →  delegar ao data-engineer, ml-engineer ou ai-engineer
+Cloud (análise pesada)    →  delegar ao agente especializado
 ```
 
 ## 6. Limitações em sessões cloud
@@ -1152,11 +1317,6 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-
 volumes:
   pgdata:
 """
@@ -1201,135 +1361,6 @@ def install_deps_in_child(destination: Path) -> None:
         print("- requirements.txt nao encontrado — pip install pulado.")
 
 
-def install_caveman_skill(destination: Path) -> None:
-    skills_base = destination / ".agents" / "skills"
-    for name, content in [
-        ("caveman", CAVEMAN_SKILL_CONTENT),
-        ("caveman-commit", CAVEMAN_COMMIT_SKILL_CONTENT),
-        ("caveman-review", CAVEMAN_REVIEW_SKILL_CONTENT),
-    ]:
-        skill_dir = skills_base / name
-        skill_dir.mkdir(parents=True, exist_ok=True)
-        (skill_dir / "SKILL.md").write_text(content, encoding="utf-8")
-
-
-def ensure_repo_absent(env: dict[str, str], full_name: str) -> None:
-    result = subprocess.run(
-        ["gh", "repo", "view", full_name, "--json", "nameWithOwner"],
-        cwd=ROOT,
-        env=env,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    if result.returncode == 0:
-        raise RuntimeError(f"O repositorio {full_name} ja existe.")
-
-
-def parse_args(argv: Iterable[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Wizard para criar um novo repositorio a partir deste template."
-    )
-    parser.add_argument("--name", help="Nome do novo repositorio.")
-    parser.add_argument(
-        "--visibility",
-        choices=["private", "public"],
-        help="Visibilidade do novo repositorio.",
-    )
-    parser.add_argument("--description", default=None, help="Descricao do repositorio.")
-    parser.add_argument(
-        "--template-branch",
-        default=None,
-        help="Branch do template a usar como base do repo novo. Default: branch atual do template.",
-    )
-    parser.add_argument(
-        "--skip-secret",
-        action="store_true",
-        help="Nao configura o secret GH_PAT no repositorio novo.",
-    )
-    parser.add_argument(
-        "--skip-workflow",
-        action="store_true",
-        help="Nao roda a workflow Setup Kanban apos criar o repositorio.",
-    )
-    parser.add_argument(
-        "--skip-validate",
-        action="store_true",
-        help="Nao roda a validacao final.",
-    )
-    parser.add_argument(
-        "--skip-clone",
-        action="store_true",
-        help="Nao clona o repositorio novo localmente.",
-    )
-    parser.add_argument(
-        "--yes",
-        action="store_true",
-        help="Confirma automaticamente a criacao sem pedir aprovacao final.",
-    )
-    parser.add_argument(
-        "--advanced",
-        action="store_true",
-        help="Modo avancado: gera cloud_guide.md e exibe orientacoes /web-setup + GitHub App.",
-    )
-    parser.add_argument(
-        "--cloud-setup",
-        action="store_true",
-        help="Gera scripts/cloud_setup.sh com instalacao de gh CLI para VM cloud.",
-    )
-    parser.add_argument(
-        "--autocompact",
-        action="store_true",
-        help="Adiciona CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=70 ao settings.json do filho.",
-    )
-    parser.add_argument(
-        "--agent-teams",
-        action="store_true",
-        help="Adiciona CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 ao settings.json do filho.",
-    )
-    parser.add_argument(
-        "--docker",
-        action="store_true",
-        help="Gera docker-compose.yml base para desenvolvimento.",
-    )
-    caveman_group = parser.add_mutually_exclusive_group()
-    caveman_group.add_argument(
-        "--caveman",
-        action="store_true",
-        default=None,
-        help="Instala o skill Caveman no repositorio novo.",
-    )
-    caveman_group.add_argument(
-        "--skip-caveman",
-        action="store_true",
-        help="Nao instala o skill Caveman.",
-    )
-    return parser.parse_args(list(argv))
-
-
-def detect_template_branch() -> str:
-    result = subprocess.run(
-        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-        cwd=ROOT,
-        text=True,
-        capture_output=True,
-        check=True,
-    )
-    return result.stdout.strip() or "main"
-
-
-def is_interactive() -> bool:
-    return sys.stdin.isatty()
-
-
-def should_confirm_creation(args: argparse.Namespace, interactive: bool) -> bool:
-    return interactive and not args.yes
-
-
-def should_prompt(args: argparse.Namespace, interactive: bool) -> bool:
-    return interactive and not args.yes
-
-
 def main(argv: Iterable[str] | None = None) -> int:
     args = parse_args(argv or sys.argv[1:])
     env = load_env()
@@ -1340,10 +1371,11 @@ def main(argv: Iterable[str] | None = None) -> int:
     template_repo = parse_origin_repo(env)
     owner = template_repo.split("/", maxsplit=1)[0]
     template_branch = args.template_branch or detect_template_branch()
-    advanced = args.advanced
 
     print("Wizard de criacao de repositorio")
     print(f"- Template atual: {template_repo} (branch: {template_branch})")
+
+    advanced = args.advanced
 
     repo_name = build_repo_name(
         args.name or prompt_text("Nome do novo repositorio", required=True)
@@ -1430,15 +1462,19 @@ def main(argv: Iterable[str] | None = None) -> int:
     project_title = f"{repo_name} Kanban"
 
     print("\nResumo")
+    print(f"- Modo: {'avancado (cloud)' if advanced else 'simples'}")
     print(f"- Novo repo: {full_name}")
     print(f"- Visibilidade: {visibility}")
-    print(f"- Modo: {'avancado (cloud)' if advanced else 'simples'}")
     print(f"- Configurar GH_PAT: {'sim' if configure_secret else 'nao'}")
     print(f"- Rodar Setup Kanban: {'sim' if run_workflow_now else 'nao'}")
     print(f"- Validar ao final: {'sim' if validate_result else 'nao'}")
     print(f"- Clonar localmente: {'sim' if clone_locally else 'nao'}")
     if clone_locally:
         print(f"- Pasta local: {local_clone_path}")
+    print("- Instalar dependencias (npm/pip): sim")
+    if advanced:
+        print("- Gerar cloud_guide.md: sim")
+        print("- Orientacoes /web-setup + GitHub App: sim")
     print(f"- Instalar Caveman: {'sim' if install_caveman else 'nao'}")
 
     if should_confirm_creation(args, interactive):
@@ -1496,7 +1532,9 @@ def main(argv: Iterable[str] | None = None) -> int:
         if configure_secret:
             gh_token = env.get("GH_TOKEN")
             if not gh_token:
-                raise RuntimeError("GH_TOKEN nao encontrado para configurar o secret GH_PAT.")
+                raise RuntimeError(
+                    "GH_TOKEN nao encontrado para configurar o secret GH_PAT."
+                )
             maybe_set_secret(env, full_name, "GH_PAT", gh_token)
             print("- Secret GH_PAT configurado.")
 
@@ -1532,6 +1570,8 @@ def main(argv: Iterable[str] | None = None) -> int:
                     )
                 print("- Caveman skill instalado.")
 
+            # B4: instalar dependencias no filho (ambos os modos)
+            print("\nInstalando dependencias no repositorio filho...")
             install_deps_in_child(local_clone_path)
 
             if advanced:
