@@ -90,10 +90,13 @@ python scripts/new_repo.py --name <nome> --visibility <private|public> --yes [--
 ```
 
 - Inclua `--advanced` se o usuário escolheu modo Avançado
+- Inclua `--caveman` se respondeu Sim na pergunta 4; inclua `--skip-caveman` se respondeu Não
 - Inclua `--autocompact` se respondeu Sim na pergunta 5
 - Inclua `--agent-teams` se respondeu Sim na pergunta 6
 - Inclua `--cloud-setup` se respondeu Sim na pergunta 7
 - Inclua `--docker` se respondeu Sim na pergunta 8
+
+O script demora até 90 segundos — ele aguarda o workflow Setup Kanban criar o Kanban e valida o resultado. Exiba o output do script ao usuário conforme ele aparecer. Se o script terminar com erro de validação, informe o usuário e sugira acessar a aba Projects do repositório manualmente em alguns minutos.
 
 $ARGUMENTS
 
@@ -105,9 +108,7 @@ Informe ao usuário:
 
 > "Projeto filho criado. Agora vamos iniciar o projeto corretamente."
 
-Execute imediatamente o comando `/kickoff`.
-
-**Nunca pule o kickoff.** Projetos que começam sem discovery e backlog aprovado acumulam retrabalho.
+Abra o repositório filho e rode `/kickoff` para iniciar o projeto com discovery e backlog.
 
 ---
 
@@ -211,6 +212,4 @@ Para acessar seu PC de fora:
 Guia completo com configurações avançadas: docs/setup/cloud_guide.md
 ```
 
-Execute imediatamente o comando `/kickoff`.
-
-**Nunca pule o kickoff.** Projetos que começam sem discovery e backlog aprovado acumulam retrabalho.
+Abra o repositório filho e rode `/kickoff` para iniciar o projeto com discovery e backlog.

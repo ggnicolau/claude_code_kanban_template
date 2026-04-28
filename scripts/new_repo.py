@@ -513,6 +513,27 @@ def find_project(env: dict[str, str], project_title: str) -> str:
     return ""
 
 
+def wait_for_project_url(
+    env: dict[str, str],
+    project_title: str,
+    *,
+    max_wait_seconds: int = 45,
+    poll_interval: int = 5,
+) -> str:
+    """Polls find_project() until the project appears or timeout. Returns URL or empty string."""
+    deadline = time.monotonic() + max_wait_seconds
+    attempt = 0
+    while time.monotonic() < deadline:
+        url = find_project(env, project_title)
+        if url:
+            return url
+        attempt += 1
+        if attempt == 1:
+            print(f"\nAguardando criacao do GitHub Project (ate {max_wait_seconds}s)...")
+        time.sleep(poll_interval)
+    return ""
+
+
 def list_repo_issues(env: dict[str, str], full_name: str) -> list[dict[str, object]]:
     output = run_command(
         [
@@ -534,7 +555,7 @@ def summarize_validation(
     full_name: str,
     project_title: str,
     *,
-    max_wait_seconds: int = 180,
+    max_wait_seconds: int = 90,
     poll_interval: int = 10,
 ) -> None:
     deadline = time.monotonic() + max_wait_seconds
@@ -1407,7 +1428,7 @@ def main(argv: Iterable[str] | None = None) -> int:
     clone_locally = not args.skip_clone
     local_clone_path = build_local_clone_path(repo_name)
 
-    if args.skip_secret is False and args.name is None and prompt_enabled:
+    if args.skip_secret is False and prompt_enabled:
         configure_secret = (
             prompt_choice(
                 "Configurar o secret GH_PAT no repo novo?",
@@ -1416,7 +1437,7 @@ def main(argv: Iterable[str] | None = None) -> int:
             )
             == "yes"
         )
-    if args.skip_workflow is False and args.name is None and prompt_enabled:
+    if args.skip_workflow is False and prompt_enabled:
         run_workflow_now = (
             prompt_choice(
                 "Rodar a workflow Setup Kanban agora?",
@@ -1425,7 +1446,7 @@ def main(argv: Iterable[str] | None = None) -> int:
             )
             == "yes"
         )
-    if args.skip_validate is False and args.name is None and prompt_enabled:
+    if args.skip_validate is False and prompt_enabled:
         validate_result = (
             prompt_choice(
                 "Validar resultado no final?",
@@ -1434,7 +1455,7 @@ def main(argv: Iterable[str] | None = None) -> int:
             )
             == "yes"
         )
-    if args.skip_clone is False and args.name is None and prompt_enabled:
+    if args.skip_clone is False and prompt_enabled:
         clone_locally = (
             prompt_choice(
                 "Clonar o repositorio novo localmente?",
@@ -1686,6 +1707,12 @@ def main(argv: Iterable[str] | None = None) -> int:
         if validate_result:
             summarize_validation(env, full_name, project_title)
         else:
+            if run_workflow_now:
+                project_url = wait_for_project_url(env, project_title)
+                if project_url:
+                    print(f"- GitHub Project criado: {project_url}")
+                else:
+                    print("- GitHub Project ainda nao disponivel — acesse a aba Projects do repositorio em instantes.")
             print("- Validacao final pulada.")
     except Exception as exc:  # noqa: BLE001
         print(f"\nErro: {exc}", file=sys.stderr)
