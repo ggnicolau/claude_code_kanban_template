@@ -46,6 +46,7 @@ Exiba a mensagem neste formato:
 📋 Estado atual: [resuma o Kanban em 1–2 linhas: o que está em andamento, o que está pendente, se o projeto ainda não foi iniciado]
 
 🛠️ Commands disponíveis:
+```
   /kickoff          → iniciar o projeto (discovery, pesquisa, relatório, apresentação, backlog)
   /advance          → avançar no Kanban (fecha prontos, paraleliza, delega)
   /review-backlog   → revisar e refinar o backlog
@@ -54,6 +55,7 @@ Exiba a mensagem neste formato:
   /fix-issue        → corrigir um bug
   /update-memory    → atualizar a memória do projeto
   /clean            → commitar e fazer push de tudo pendente
+```
 
 👥 Equipe: project-manager · tech-lead · product-owner · researcher
          data-engineer · ml-engineer · ai-engineer · infra-devops
