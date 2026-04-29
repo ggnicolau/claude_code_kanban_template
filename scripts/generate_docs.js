@@ -24,7 +24,7 @@ const { marked } = require('marked');
 
 const ROOT = path.resolve(__dirname, '..');
 const DOCS_DIR = path.join(ROOT, 'docs');
-const STYLE_FILE = path.join(ROOT, 'scripts', 'templates', 'styles', 'academic.css');
+const STYLE_FILE = path.join(ROOT, 'scripts', 'templates', 'styles', 'enterprise.css');
 
 const args = process.argv.slice(2);
 const FORCE = args.includes('--force');
