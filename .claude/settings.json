@@ -1,4 +1,8 @@
 {
+  "enableAllProjectMcpServers": true,
+  "alwaysThinkingEnabled": false,
+  "cleanupPeriodDays": 7,
+  "feedbackSurveyRate": 0,
   "permissions": {
     "allow": [
       "Bash(python:*)",
@@ -12,6 +16,36 @@
       "Agent(*)",
       "WebSearch(*)",
       "WebFetch(*)",
+      "Bash(node *)",
+      "Bash(npm *)",
+      "Bash(jupyter *)",
+      "Bash(ls *)",
+      "Bash(find *)",
+      "Bash(diff *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(wc *)",
+      "Bash(echo *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(aws *)",
+      "Bash(gcloud *)",
+      "Bash(az *)",
+      "Bash(cat *)",
+      "Bash(grep *)",
+      "Bash(sed *)",
+      "Bash(awk *)",
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(unzip *)",
+      "Bash(tar *)",
+      "Bash(conda *)",
+      "Bash(Rscript *)",
+      "Bash(pandoc *)",
+      "Bash(which *)",
+      "Bash(export *)",
+      "Bash(touch *)",
       "mcp__github__get_file_contents",
       "mcp__github__get_me",
       "mcp__github__search_repositories",
@@ -41,6 +75,10 @@
       "PowerShell(Get-Command *)",
       "PowerShell(Get-ChildItem *)",
       "PowerShell(Test-Path *)"
+    ],
+    "ask": [
+      "mcp__github__fork_repository",
+      "mcp__github__create_repository"
     ],
     "deny": [
       "mcp__github__delete_file",
@@ -72,7 +110,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/scripts/hooks/session_start.sh\""
+            "command": "bash \"$CLAUDE_PROJECT_DIR/scripts/hooks/session_start.sh\"",
+            "statusMessage": "Carregando estado do projeto..."
           }
         ]
       }
@@ -83,7 +122,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/scripts/hooks/post_write.sh\""
+            "command": "bash \"$CLAUDE_PROJECT_DIR/scripts/hooks/post_write.sh\"",
+            "statusMessage": "Atualizando arquivos..."
           }
         ]
       }
@@ -91,6 +131,8 @@
   },
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "95"
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "95",
+    "BASH_DEFAULT_TIMEOUT_MS": "120000",
+    "BASH_MAX_TIMEOUT_MS": "600000"
   }
 }
