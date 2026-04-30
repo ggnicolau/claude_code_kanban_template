@@ -189,6 +189,10 @@ sequenceDiagram
 
 Este nível de disciplina de processo é o que times de engenharia maduros em grandes empresas lutam para manter. Aqui é o comportamento padrão — não porque os agentes são rígidos, mas porque as regras estão codificadas no `CLAUDE.md` e os agentes as seguem consistentemente.
 
+Há uma consequência menos óbvia disso: o sistema implementa, por padrão, governança e processos que organizações inteiras levam anos tentando instalar — e frequentemente falham. Separação de responsabilidades, revisão obrigatória por par com papel diferente do autor, rastreabilidade de decisões, backlog com critério de aceite real, versionamento de documentos, trilha de auditoria completa — tudo isso existe em manuais de qualidade, frameworks de gestão e certificações que custam caro e produzem burocracia sem resultado proporcional. Aqui não é política — é comportamento emergente de agentes com papéis bem definidos. Ninguém precisa ser convencido a seguir o processo porque o processo é a única forma de agir disponível no sistema.
+
+Isso abre uma possibilidade menos óbvia: usar o template para **explorar e validar estruturas organizacionais antes de implementá-las com pessoas**. Você pode instanciar um organograma, definir as regras de interação entre papéis, e observar onde o sistema trava sob carga real de trabalho — quais handoffs são ambíguos, quais responsabilidades se sobrepõem, onde a cadeia de aprovação cria gargalo desnecessário. O custo de descobrir esses problemas num sistema de agentes é ordens de magnitude menor do que descobri-los depois que equipes foram montadas e processos foram institucionalizados.
+
 A execução pode ser **autônoma** — você roda `/advance` e o PM orquestra tudo sem intervenção — ou **semi-autônoma** — você aprova cada delegação antes que o especialista comece a trabalhar. Em ambos os casos, a trilha de auditoria é completa: commits rastreiam issues, PRs têm contexto, a memória registra decisões, o Kanban reflete o estado real.
 
 ---
