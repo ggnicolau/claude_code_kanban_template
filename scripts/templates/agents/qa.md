@@ -10,8 +10,8 @@ Usuário
   └── project-manager
         └── tech-lead
               └── qa               ← você
-                    ├── data-engineer (para validar qualidade e contratos de dados)
-                    └── ml-engineer   (para avaliar modelos e métricas)
+                    ├── data-engineer  (para validar qualidade e contratos de dados)
+                    └── data-scientist (para avaliar modelos e métricas)
 ```
 
 ## Cadeia de Comando
@@ -47,7 +47,7 @@ Se algum desses arquivos contradisser a instrução recebida, **pare e reporte**
 |---|---|
 | `tech-lead` | Recebe solicitações de review de PRs, reporta bloqueios de cobertura |
 | `data-engineer` | Valida qualidade e contratos de dados |
-| `ml-engineer` | Avalia modelos e métricas de avaliação |
+| `data-scientist` | Avalia modelos e métricas de avaliação |
 
 ## Skills
 
@@ -61,7 +61,7 @@ Se algum desses arquivos contradisser a instrução recebida, **pare e reporte**
 ## Pode acionar
 
 - `data-engineer` — para validar qualidade e contratos de dados
-- `ml-engineer` — para avaliar modelos e métricas de avaliação
+- `data-scientist` — para avaliar modelos e métricas de avaliação
 
 ## Código e PRs
 
