@@ -240,6 +240,12 @@ O output deste plano não é código — é um post publicado, um PDF público, 
 
 Esta distinção é o que separa o padrão dual de um pipeline de automação convencional. A narrativa não é pré-escrita. O ângulo não é fixo. A profundidade da análise varia conforme o que os dados revelam. É raciocínio aplicado a um processo recorrente — não automação de um processo determinístico.
 
+O padrão se manifesta de forma diferente em cada domínio — mas a estrutura é sempre a mesma. O que muda é o que os agentes produzem, não como o sistema os governa.
+
+**Em pesquisa em saúde**, o plano de execução não publica posts — produz ciência. O `epidemiologist` atua como gateway obrigatório: é ele quem define o desenho do estudo, deriva o framework de questão (PICO, PICo, PCC), e convoca as especialidades clínicas necessárias com base no protocolo aprovado pelo `principal-investigator`. O `biostatistician` entra em *modo execução* — distinto do seu *modo design* usado no kickoff — para rodar a análise estatística sobre os dados coletados: modelos de regressão, análise de sobrevida, cálculo de intervalos de confiança. O `academic-writer` recebe os resultados validados e produz a seção de resultados e discussão no formato IMRAD, seguindo o reporting guideline adequado (CONSORT para ensaios clínicos, STROBE para estudos observacionais). O `dissemination-strategist` fecha o ciclo identificando periódicos com JIF compatível, preparando a submissão, e adaptando o abstract para registro em ClinicalTrials.gov quando aplicável. Cada etapa é rastreada em issues. Cada entregável é versionado. A cadeia de comando é a mesma — só o domínio dos agentes muda.
+
+**Em ciências sociais**, o plano de execução produz conhecimento acadêmico a partir de corpus textuais, arquivos históricos, dados de survey, ou entrevistas. O `qualitative-analyst` executa análise de discurso ou análise temática sobre o corpus coletado pelo `data-engineer`, consultando o `philosopher` para as ancoragens epistemológicas quando o referencial teórico exige. O `quantitative-analyst` roda modelos estatísticos sobre dados de survey em parceria com o `data-scientist`, submetendo os resultados à validação do `methodologist`. O `academic-writer` integra as análises numa revisão sistemática no formato PRISMA ou num artigo no padrão do periódico-alvo. O `dissemination-strategist` não apenas submete — adapta o texto para divulgação científica em linguagem acessível ao público não-especializado, mantendo rigor sem perder alcance. Aqui também: issues para cada etapa, versões para cada rascunho, revisão por pares integrada ao fluxo antes da submissão externa.
+
 ---
 
 ## Kanban e issues como memória coletiva, canal de comunicação e fonte de rastreabilidade
@@ -319,9 +325,19 @@ A consequência natural de uma arquitetura replicável com overhead baixo é a p
 
 O `claude-code-enterprise-template` é o template base — agnóstico de domínio, com 13 agentes cobrindo as funções universais de qualquer projeto de produto: coordenação, produto, engenharia, dados, infraestrutura, qualidade, segurança, marketing. A partir dele, é possível criar templates especializados que herdam toda a infraestrutura — Kanban, memória persistente, hooks, skills, convenções — e adicionam agentes de domínio específico.
 
-O processo de criação de um projeto filho via `/wizard` leva menos de dez minutos. O `/kickoff` que se segue conduz uma Fase 0 narrativa — onde o fundador ou pesquisador conta o contexto do projeto, sua trajetória, as âncoras estratégicas e as exclusões — e persiste tudo em memória antes de iniciar o discovery. O backlog resultante não é um conjunto de issues genéricas: é um plano específico para aquele projeto, com dimensões cobertas, prioridades justificadas, e critérios de aceite derivados do contexto real.
+| Template | Domínio | Agentes | Plano de execução produz |
+|---|---|---|---|
+| `claude-code-enterprise-template` | Produto e engenharia | 13 | Posts, relatórios, pipelines automatizados, deploys |
+| `claude-code-health-template` | Pesquisa em saúde | 75 (55 especialidades CFM) | Protocolos, análises estatísticas, artigos IMRAD, submissões |
+| `claude-code-social-sciences-template` | Ciências sociais | 25 (10 especialidades de domínio) | Revisões sistemáticas, análises de corpus, artigos acadêmicos, divulgação |
 
-Isso é o que raramente se vê em projetos individuais ou times pequenos: um backlog que funciona como artefato de produto de verdade — refinado, discutido, anotado, com história. Não uma lista de tarefas que vai ficando obsoleta. A rastreabilidade e a explicabilidade não são recursos opcionais que você adiciona quando o projeto cresce — são a estrutura desde o primeiro commit.
+O que esses três templates compartilham é idêntico: o `CLAUDE.md` como lei, o Kanban como fonte de verdade, a memória persistente, os hooks automáticos, a cadeia de comando, as regras de branch e commit, os gates de aprovação. O que difere é o vocabulário dos agentes — epidemiologist em vez de data-scientist, principal-investigator em vez de tech-lead, dissemination-strategist em vez de marketing-strategist — e os artefatos que o plano de execução produz.
+
+Essa separação entre **infraestrutura universal** e **domínio especializado** é o que torna os templates sincronizáveis. Quando a infraestrutura evolui — uma melhoria no `/advance`, uma nova convenção de commit, um hook mais robusto — ela pode ser propagada para todos os templates filhos sem tocar nos agentes de domínio. E quando um template de domínio evolui — um novo agente clínico, uma nova dimensão de análise qualitativa — ele não contamina a infraestrutura compartilhada.
+
+O processo de criação de um projeto filho via `/wizard` leva menos de dez minutos. O `/kickoff` que se segue conduz uma Fase 0 narrativa — onde o fundador, pesquisador ou clínico conta o contexto do projeto, sua trajetória, as âncoras estratégicas e as exclusões — e persiste tudo em memória antes de iniciar o discovery. O backlog resultante não é um conjunto de issues genéricas: é um plano específico para aquele projeto, com dimensões cobertas, prioridades justificadas, e critérios de aceite derivados do contexto real.
+
+Isso é o que raramente se vê em projetos individuais ou times pequenos: um backlog que funciona como artefato de produto de verdade — refinado, discutido, anotado, com história. Não uma lista de tarefas que vai ficando obsoleta. A rastreabilidade e a explicabilidade não são recursos opcionais que você adiciona quando o projeto cresce — são a estrutura desde o primeiro commit, em qualquer domínio.
 
 ---
 
