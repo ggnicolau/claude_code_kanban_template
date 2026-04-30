@@ -9,16 +9,17 @@ Como os agentes se comunicam, colaboram e transferem trabalho.
 | Agente | Responde a | Trabalha com |
 |---|---|---|
 | `project-manager` | Usuário | tech-lead, product-owner, researcher, marketing-strategist |
-| `tech-lead` | project-manager | data-engineer, ml-engineer, ai-engineer, infra-devops, qa, security-auditor, frontend-engineer, researcher |
+| `tech-lead` | project-manager | data-engineer, data-scientist, ml-engineer, ai-engineer, infra-devops, qa, security-auditor, frontend-engineer, researcher |
 | `product-owner` | project-manager | researcher, marketing-strategist, Kanban |
 | `researcher` | PM / PO / TL | todos que precisam de inteligência |
-| `marketing-strategist` | PM / PO | researcher |
-| `data-engineer` | tech-lead | researcher, qa |
-| `ml-engineer` | tech-lead | data-engineer, researcher |
+| `marketing-strategist` | PM / PO | researcher, data-scientist |
+| `data-engineer` | tech-lead | data-scientist, researcher, qa |
+| `data-scientist` | tech-lead | data-engineer, researcher, marketing-strategist |
+| `ml-engineer` | tech-lead | data-scientist, data-engineer, researcher |
 | `ai-engineer` | tech-lead | researcher, ml-engineer |
 | `infra-devops` | tech-lead | security-auditor |
 | `frontend-engineer` | tech-lead | infra-devops, researcher |
-| `qa` | tech-lead | data-engineer, ml-engineer |
+| `qa` | tech-lead | data-engineer, data-scientist |
 | `security-auditor` | tech-lead / infra-devops | infra-devops |
 
 ---

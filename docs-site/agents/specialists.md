@@ -1,6 +1,6 @@
 # Agentes especialistas
 
-Os 9 agentes que executam o trabalho técnico e estratégico.
+Os 10 agentes que executam o trabalho técnico e estratégico.
 
 ---
 
@@ -18,13 +18,25 @@ Os 9 agentes que executam o trabalho técnico e estratégico.
 
 ---
 
+### data-scientist
+
+**Aciona quando:** análise exploratória, modelagem estatística, identificação de anomalias, insights para negócio ou editorial.
+
+**Entrega:** análise com contexto estatístico, modelos validados prontos para produtização pelo ml-engineer.
+
+**Colabora com:** data-engineer (dados limpos), researcher (benchmarks analíticos), marketing-strategist (embasa copy com análise).
+
+**Skills:** `.agents/skills/data-engineering/SKILL.md`, `.agents/skills/ml-engineering/SKILL.md`
+
+---
+
 ### ml-engineer
 
-**Aciona quando:** modelos de ML, feature engineering, experimentos, avaliação de modelos.
+**Aciona quando:** produtização de modelos validados pelo data-scientist — pipeline de treino, serving, monitoramento de drift.
 
-**Entrega:** notebooks de experimento, código de treinamento, relatório de métricas.
+**Entrega:** pipeline de treino automatizado, serviço de serving, relatório de performance em produção.
 
-**Colabora com:** data-engineer (upstream), researcher (benchmarks), qa (validação de modelos).
+**Colabora com:** data-scientist (recebe modelos validados), data-engineer (dados para treino), researcher (benchmarks).
 
 **Skill:** `.agents/skills/ml-engineering/SKILL.md`
 
@@ -60,7 +72,7 @@ Os 9 agentes que executam o trabalho técnico e estratégico.
 
 **Entrega:** suite de testes, relatório de cobertura, configuração de CI para testes.
 
-**Colabora com:** data-engineer (testes de pipeline), ml-engineer (testes de modelo).
+**Colabora com:** data-engineer (testes de pipeline), data-scientist (avalia modelos e métricas).
 
 **Skill:** `.agents/skills/qa-testing/SKILL.md`
 

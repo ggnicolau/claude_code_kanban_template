@@ -6,7 +6,7 @@
 
 ## O que é isso?
 
-O `claude-code-enterprise-template` é um repositório-modelo que transforma o Claude Code em um **ambiente de desenvolvimento colaborativo com equipe de agentes especializados**. Em vez de um único assistente respondendo perguntas, você tem uma equipe de 12 agentes — cada um com papel, permissões e responsabilidades definidas — trabalhando em conjunto para conduzir um projeto do discovery ao lançamento.
+O `claude-code-enterprise-template` é um repositório-modelo que transforma o Claude Code em um **ambiente de desenvolvimento colaborativo com equipe de agentes especializados**. Em vez de um único assistente respondendo perguntas, você tem uma equipe de 13 agentes — cada um com papel, permissões e responsabilidades definidas — trabalhando em conjunto para conduzir um projeto do discovery ao lançamento.
 
 !!! tip "Para quem é?"
     Times de produto e engenharia que querem usar IA de forma estruturada e auditável em projetos de longa duração — startups, projetos internos, MVPs e plataformas enterprise.
@@ -15,7 +15,7 @@ O `claude-code-enterprise-template` é um repositório-modelo que transforma o C
 
 ## Principais características
 
-- **12 agentes especializados** — do project-manager ao security-auditor, do data-engineer ao frontend-engineer
+- **13 agentes especializados** — do project-manager ao security-auditor, do data-engineer ao frontend-engineer
 - **Kanban integrado ao GitHub Projects** — nenhum trabalho acontece sem issue no board
 - **Versionamento explícito de documentos** — `{nome}_YYYY-MM-DD_v{N}.md`, sem sobrescrita
 - **Dois regimes de trabalho** — Discovery (`/kickoff`) e Execução (`/advance`)

@@ -69,8 +69,8 @@ Executado após cada escrita de arquivo.
 |---|---|
 | `product-management` | project-manager, product-owner |
 | `code-review` | tech-lead |
-| `data-engineering` | data-engineer |
-| `ml-engineering` | ml-engineer |
+| `data-engineering` | data-engineer, data-scientist |
+| `ml-engineering` | data-scientist, ml-engineer |
 | `ai-engineering` | ai-engineer |
 | `frontend-engineering` | frontend-engineer |
 | `security-audit` | security-auditor |

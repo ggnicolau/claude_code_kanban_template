@@ -23,16 +23,20 @@ sequenceDiagram
     participant TL as tech-lead
 
     User->>PM: /kickoff
-    
-    Note over PM: Fase 0a — Perguntas narrativas
+
+    Note over PM: Fase 0a — IDs do Kanban
+    PM->>PM: Descobre project-id, field-id e option-ids via GraphQL
+    PM->>PM: Salva kanban_ids.md + injeta no product-owner.md
+
+    Note over PM: Fase 0b — Perguntas narrativas
     PM->>User: Contexto do fundador, problema, ancoragens
     User->>PM: Respostas
 
-    Note over PM: Fase 0b — Síntese + confirmação
+    Note over PM: Fase 0c — Síntese + confirmação
     PM->>User: Síntese consolidada
     User->>PM: Aprovação
 
-    Note over PM: Fase 0c — Persistência de memória
+    Note over PM: Fase 0d — Persistência de memória
     PM->>PM: Cria .claude/memory/ (4 arquivos)
 
     Note over PM,RES: Fase 1 — Discovery
@@ -59,11 +63,15 @@ sequenceDiagram
 
 ---
 
-## Fase 0 — Memória persistente
+## Fase 0 — Setup e memória persistente
 
-A Fase 0 é a mais importante. Ela cria a **memória do projeto** que persiste entre todas as sessões futuras.
+A Fase 0 é a mais importante. Ela configura a infraestrutura do projeto e cria a **memória** que persiste entre todas as sessões futuras.
 
-### 0a — Perguntas narrativas
+### 0a — IDs do Kanban
+
+Antes de qualquer conversa, o PM descobre os IDs do GitHub Project via GraphQL e os injeta no `product-owner.md`, habilitando o PO a mover cards sem configuração manual. Salva também em `.claude/memory/kanban_ids.md`.
+
+### 0b — Perguntas narrativas
 
 O PM faz perguntas abertas ao fundador:
 
@@ -73,17 +81,18 @@ O PM faz perguntas abertas ao fundador:
 4. O que este projeto definitivamente **não** é?
 5. Quais são suas ancoragens não-negociáveis?
 
-### 0b — Síntese e confirmação
+### 0c — Síntese e confirmação
 
 O PM consolida as respostas em uma síntese e pede confirmação antes de persistir.
 
-### 0c — Persistência
+### 0d — Persistência
 
 Cria `.claude/memory/` com 4 arquivos:
 
 ```
 .claude/memory/
 ├── MEMORY.md          # índice
+├── kanban_ids.md      # IDs do GitHub Project (project-id, field-id, option-ids)
 ├── user_profile.md    # quem é o fundador
 ├── project_genesis.md # gênese e ancoragens
 └── project_history.md # histórico (vazio no início)
@@ -110,7 +119,8 @@ O product-owner cria issues cobrindo todas as dimensões do projeto:
 
 Ao final do kickoff:
 
-- Memória persistente criada em `.claude/memory/`
+- IDs do Kanban injetados no `product-owner.md` e salvos em `.claude/memory/kanban_ids.md`
+- Memória persistente criada em `.claude/memory/` (user_profile, project_genesis, project_history)
 - Relatório de discovery em `docs/business/relatorio_YYYY-MM-DD_v1.md`
 - Backlog completo no GitHub Projects (issues em todas as 6 dimensões)
 - Branch `dev` criado e configurado

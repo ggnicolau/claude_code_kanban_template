@@ -1,6 +1,6 @@
 # Agentes — Visão geral
 
-O sistema tem 12 agentes especializados, organizados em três níveis hierárquicos.
+O sistema tem 13 agentes especializados, organizados em três níveis hierárquicos.
 
 ---
 
@@ -15,13 +15,13 @@ graph TD
     PM -->|"aciona"| RES["researcher"]
     PM -->|"aciona"| MKT["marketing-strategist"]
 
-    TL -->|"orquestra"| SPEC["Especialistas técnicos\n(7 agentes)"]
+    TL -->|"orquestra"| SPEC["Especialistas técnicos\n(8 agentes)"]
     PO -->|"gerencia"| KB[("GitHub Kanban")]
 ```
 
 ---
 
-## Os 12 agentes
+## Os 13 agentes
 
 ### Coordenação (3)
 
@@ -38,12 +38,13 @@ graph TD
 | `researcher` | Pesquisa de mercado, benchmarks, inteligência competitiva |
 | `marketing-strategist` | Go-to-market, posicionamento, campanhas |
 
-### Especialistas técnicos (7)
+### Especialistas técnicos (8)
 
 | Agente | Papel resumido |
 |---|---|
 | `data-engineer` | Pipelines, ETL, qualidade de dados |
-| `ml-engineer` | Modelos, features, experimentos |
+| `data-scientist` | Análise exploratória, modelagem estatística, insights para negócio |
+| `ml-engineer` | Produtização de modelos validados pelo data-scientist |
 | `ai-engineer` | LLMs, agentes, RAG, evals |
 | `infra-devops` | Cloud, CI/CD, containers, observabilidade |
 | `qa` | Testes, cobertura, qualidade |
