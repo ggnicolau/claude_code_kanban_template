@@ -23,6 +23,7 @@ graph TD
 
     subgraph TECH ["Especialistas técnicos"]
         DE["data-engineer"]
+        DS["data-scientist"]
         MLE["ml-engineer"]
         AIE["ai-engineer"]
         IDF["infra-devops"]
@@ -43,6 +44,7 @@ graph TD
     PO -->|"gerencia"| KB[("GitHub Kanban")]
 
     TL -->|"orquestra"| DE
+    TL -->|"orquestra"| DS
     TL -->|"orquestra"| MLE
     TL -->|"orquestra"| AIE
     TL -->|"orquestra"| IDF
@@ -53,10 +55,13 @@ graph TD
 
     IDF -->|"aciona"| SEC
     FE -->|"colabora"| IDF
+    DS -->|"depende"| DE
+    DS -->|"entrega modelos a"| MLE
+    DS -->|"embasa copy de"| MKT
     MLE -->|"depende"| DE
     AIE -->|"colabora"| MLE
     QA -->|"testa"| DE
-    QA -->|"testa"| MLE
+    QA -->|"avalia"| DS
 ```
 
 ---

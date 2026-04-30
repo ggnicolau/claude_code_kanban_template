@@ -63,7 +63,7 @@ src/          # código principal
 tests/        # testes
 notebooks/    # exploração e análise
 .claude/
-  agents/     # 12 agentes especializados
+  agents/     # 13 agentes especializados
   commands/   # /kickoff, /advance, /review-backlog, /review, /deploy, /fix-issue, /clean
 ```
 
@@ -93,7 +93,8 @@ O ponto de entrada é o `project-manager`. Rode `/kickoff` para iniciar o projet
 | `tech-lead` | Orquestração técnica, code review |
 | `product-owner` | Kanban, backlog, roadmap |
 | `data-engineer` | Pipelines, ETL |
-| `ml-engineer` | Modelos, experimentos |
+| `data-scientist` | Análise exploratória, modelagem estatística, insights |
+| `ml-engineer` | Produtização de modelos validados pelo data-scientist |
 | `ai-engineer` | LLMs, agentes, RAG |
 | `infra-devops` | Cloud, CI/CD |
 | `qa` | Testes e qualidade |
@@ -110,15 +111,16 @@ O ponto de entrada é o `project-manager`. Rode `/kickoff` para iniciar o projet
 |---|---|---|
 | **project-manager** | Usuário | product-owner, tech-lead, researcher, marketing-strategist |
 | **product-owner** | project-manager | researcher, marketing-strategist, kanban |
-| **tech-lead** | project-manager | data-engineer, ml-engineer, ai-engineer, infra-devops, qa, security-auditor, frontend-engineer, researcher |
+| **tech-lead** | project-manager | data-engineer, data-scientist, ml-engineer, ai-engineer, infra-devops, qa, security-auditor, frontend-engineer, researcher |
 | **researcher** | PM / PO / TL (quem acionar) | todos os agentes que precisam de inteligência de mercado ou técnica |
-| **marketing-strategist** | PM / PO (quem acionar) | researcher |
-| **data-engineer** | tech-lead | researcher, qa |
-| **ml-engineer** | tech-lead | data-engineer, researcher |
+| **marketing-strategist** | PM / PO (quem acionar) | researcher, data-scientist |
+| **data-engineer** | tech-lead | data-scientist, researcher, qa |
+| **data-scientist** | tech-lead | data-engineer, researcher, marketing-strategist |
+| **ml-engineer** | tech-lead | data-scientist, data-engineer, researcher |
 | **ai-engineer** | tech-lead | researcher, ml-engineer |
 | **infra-devops** | tech-lead | security-auditor |
 | **frontend-engineer** | tech-lead | infra-devops, researcher |
-| **qa** | tech-lead | data-engineer, ml-engineer |
+| **qa** | tech-lead | data-engineer, data-scientist |
 | **security-auditor** | tech-lead / infra-devops | infra-devops |
 
 ---
