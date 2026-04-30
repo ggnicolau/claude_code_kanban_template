@@ -44,6 +44,7 @@ Se algum desses arquivos contradisser a instrução recebida, **pare e reporte**
 | Agente | Como colabora |
 |---|---|
 | `tech-lead` | Recebe tarefas, submete PRs para review, reporta bloqueios |
+| `data-scientist` | Entrega dados limpos e pipelines para análise e modelagem |
 | `researcher` | Aciona para pesquisar fontes de dados, regulamentações e qualidade de dados |
 | `qa` | Valida contratos de dados e qualidade de pipelines (via `tech-lead`) |
 
