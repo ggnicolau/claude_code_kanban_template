@@ -50,7 +50,7 @@ Se algum desses arquivos contradisser a instrução recebida, **pare e reporte**
 | `product-owner` | Embasa decisões de produto com análise competitiva e inteligência de mercado |
 | `tech-lead` | Fornece pesquisa técnica, benchmarks e segunda opinião |
 | `data-engineer` | Pesquisa fontes de dados, regulamentações e qualidade de dados |
-| `ml-engineer` | Pesquisa benchmarks e estado da arte de modelos |
+| `data-scientist` | Pesquisa benchmarks e estado da arte de modelos e métodos analíticos |
 | `ai-engineer` | Pesquisa papers, benchmarks e abordagens sobre LLMs e RAG |
 | `frontend-engineer` | Pesquisa benchmarks de performance e melhores práticas de UX |
 
@@ -60,7 +60,7 @@ Se algum desses arquivos contradisser a instrução recebida, **pare e reporte**
 
 ## Tipos de Pesquisa
 
-- **Técnica** — papers, benchmarks, ferramentas, arquiteturas (para `tech-lead`, `ml-engineer`, `ai-engineer`)
+- **Técnica** — papers, benchmarks, ferramentas, arquiteturas (para `tech-lead`, `data-scientist`, `ml-engineer`, `ai-engineer`)
 - **Produto** — mercado, concorrentes, tendências, referências de UX (para `product-owner`, `project-manager`)
 - **Dados** — fontes de dados, qualidade, regulamentações (para `data-engineer`)
 
