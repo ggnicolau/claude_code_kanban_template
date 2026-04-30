@@ -1,6 +1,6 @@
 # {repo_name} — Equipe de Agentes
 
-Este projeto usa uma equipe de 12 agentes especializados. O ponto de entrada padrão é o `project-manager`.
+Este projeto usa uma equipe de 13 agentes especializados. O ponto de entrada padrão é o `project-manager`.
 
 ## Time
 
@@ -10,6 +10,7 @@ Este projeto usa uma equipe de 12 agentes especializados. O ponto de entrada pad
 | `tech-lead` | Orquestrador técnico, code review, dono da documentação técnica |
 | `product-owner` | Kanban, backlog, roadmap, priorização |
 | `data-engineer` | Pipelines, ETL, qualidade de dados |
+| `data-scientist` | Análise exploratória, contexto estatístico, insights para editorial e produto |
 | `ml-engineer` | Modelos, features, experimentos |
 | `ai-engineer` | LLMs, agentes, RAG, evals |
 | `infra-devops` | Cloud, CI/CD, containers |
@@ -35,7 +36,8 @@ graph TD
     PO --> KB[("GitHub Kanban")]
 
     TL --> DE["🔧 Data Engineer\npipelines + ETL"]
-    TL --> MLE["📊 ML Engineer\nmodelos + experimentos"]
+    TL --> DS["📈 Data Scientist\nanálise + modelagem"]
+    TL --> MLE["📊 ML Engineer\nprodutização de modelos"]
     TL --> AIE["🤖 AI Engineer\nLLMs + agentes + RAG"]
     TL --> IDF["☁️ Infra & DevOps\ncloud + CI/CD"]
     TL --> QA["✅ QA\ntestes + qualidade"]
@@ -44,6 +46,8 @@ graph TD
     TL --> FE["🖥️ Frontend Engineer\nweb + UI + UX"]
 
     FE --> IDF
+    DS --> MLE
+    DS --> MKT
     MLE --> DE
     AIE --> MLE
     QA --> DE
@@ -63,8 +67,10 @@ graph TD
 
 **`tech-lead`** lê:
 
-1. `.claude/memory/project_genesis.md` — contexto do projeto
-2. `git log --oneline -10` — últimos commits
+1. `.claude/memory/MEMORY.md` — índice da memória persistente (inclui referências a guidelines do projeto)
+2. `.claude/memory/project_genesis.md` — contexto do projeto
+3. `docs/kickoff/kickoff.md` (se existir) — problem statement e backlog aprovados
+4. `git log --oneline -10` — últimos commits
 
 **Todos os demais agentes** leem apenas:
 
@@ -104,6 +110,17 @@ Os arquivos de memória são criados na **Fase 0 do `/kickoff`** e atualizados v
 | Fechar issue | `product-owner` após merge |
 
 Regra central: **nenhum agente faz merge do próprio trabalho sem aprovação do `tech-lead`**.
+
+## Fluxo de Aprovação por Tipo de Artefato
+
+| Tipo de artefato | Exemplos | Revisão e aprovação |
+|---|---|---|
+| Código | PRs de feature, fix, infra | `tech-lead` |
+| Docs internos | pitch, personas, roadmap, arquitetura | `project-manager` |
+| Copy / editorial | texto de slide, legenda, narrativa | `project-manager` + `product-owner` |
+| Artefato de publicação | PDF público, post em mídia, apresentação externa | `marketing-strategist` valida e publica; escala para `tech-lead` se bug de renderização |
+
+Regra central: **artefatos que saem da organização passam obrigatoriamente pelo `marketing-strategist` antes da publicação**.
 
 ## Versionamento e geração de documentos
 
