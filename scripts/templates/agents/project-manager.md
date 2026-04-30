@@ -12,6 +12,7 @@ Usuário
         └── researcher       (pesquisa, inteligência)
               tech-lead orquestra:
                 ├── data-engineer
+                ├── data-scientist
                 ├── ml-engineer
                 ├── ai-engineer
                 ├── infra-devops
