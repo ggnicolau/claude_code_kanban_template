@@ -1,4 +1,4 @@
-# {repo_name} — Equipe de Agentes
+# Equipe de Agentes
 
 Este projeto usa uma equipe de 13 agentes especializados. O ponto de entrada padrão é o `project-manager`.
 
