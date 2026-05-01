@@ -12,18 +12,19 @@ Antes de perguntar sobre o produto em si, você precisa entender **quem** está 
 
 ### Fase 0a — IDs do Kanban
 
-Com o Kanban já criado pelo wizard, descubra os IDs do projeto via GraphQL e injete no `product-owner.md`:
+Com o Kanban já criado pelo wizard, descubra os IDs do projeto via GraphQL:
 
 ```bash
 export GH_TOKEN=$(grep GH_TOKEN .env | cut -d= -f2)
 
-# Descobrir project-id, field-id e option-ids de uma vez
+# Descobrir project-number, project-id, field-id e option-ids de uma vez
 gh api graphql -f query='
 query {
   repository(owner: "{owner}", name: "{repo_name}") {
     projectsV2(first: 1) {
       nodes {
         id
+        number
         fields(first: 20) {
           nodes {
             ... on ProjectV2SingleSelectField {
@@ -38,6 +39,8 @@ query {
   }
 }'
 ```
+
+O campo `number` retornado é o **project-number** (inteiro usado em comandos `gh project item-list`, `gh project item-add`, etc.). O campo `id` é o **project-id** global (usado em `gh project item-edit` via GraphQL).
 
 Com o output, extraia e salve em `.claude/memory/kanban_ids.md`:
 
@@ -272,10 +275,11 @@ Status das issues ao criar:
 
 ### Passo 5.3 — Vinculação obrigatória ao GitHub Project
 
+Leia `project-number` e `owner` de `.claude/memory/kanban_ids.md` antes de rodar:
+
 ```bash
 OWNER=$(gh repo view --json owner -q .owner.login)
-PROJECT_NUMBER=$(gh project list --owner "$OWNER" --format json \
-  | jq -r '.projects[] | select(.title | endswith("Kanban")) | .number' | head -1)
+PROJECT_NUMBER=$(grep -oP '(?<=\*\*project-number\*\*: )\d+' .claude/memory/kanban_ids.md)
 
 ISSUE_URL=$(gh issue create \
   --title "..." \
