@@ -68,6 +68,19 @@ type: project
 | In Progress | <valor> |
 | Review | <valor> |
 | Done | <valor> |
+
+**Uso dos option IDs:** além de `item-edit`, use-os para filtrar listagens diretamente — evita listar todos os cards e filtrar no cliente:
+
+```bash
+gh project item-list <project-number> --owner <owner> --format json | python3 -c "
+import json,sys
+for i in json.load(sys.stdin)['items']:
+    if i.get('status') == 'Review':  # substitua pelo status alvo
+        print(i['id'], i['title'])
+"
+```
+
+Para mover um card: `gh project item-edit --id <PVTI_...> --project-id <project-id> --field-id <field-id> --single-select-option-id <option-id>`
 ```
 
 Commit:
