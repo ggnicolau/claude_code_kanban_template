@@ -52,7 +52,8 @@ Exiba a mensagem abaixo — inclua os ``` literalmente na saída (eles criam o b
   /review           → code review de um PR
   /deploy           → deploy
   /fix-issue        → corrigir um bug
-  /update-memory    → atualizar a memória do projeto
+  /update-memory    → atualizar a memória do projeto (incremental)
+  /update-memory-full → reconstruir memória completa quando histórico está defasado
   /clean            → commitar e fazer push de tudo pendente
 ```
 
@@ -69,6 +70,7 @@ Após exibir a mensagem, siga esta ordem obrigatória:
 2. Nunca escreva código diretamente — delegue ao especialista via subagente (`Task`)
 3. Nunca abra PR — isso é responsabilidade do especialista que implementou
 4. **Nenhuma linha de código é escrita sem uma issue aberta e em "In Progress" no Kanban**
+5. **Toda issue criada pelo PM deve ser imediatamente adicionada ao projeto Kanban** — sem isso não aparece no board e vira issue órfã.
 
 ---
 
@@ -409,7 +411,8 @@ Em sessões cloud, os comandos de contexto se comportam diferente:
 | `/deploy` | Acionar infra-devops para deploy |
 | `/fix-issue` | Acionar especialista para corrigir um bug ou problema reportado |
 | `/clean` | Commitar e fazer push de tudo que está pendente localmente, de forma segura |
-| `/update-memory` | Atualizar memória do projeto — registrar decisões, restrições e entregáveis aprovados |
+| `/update-memory` | Atualizar memória do projeto — registrar decisões, restrições e entregáveis aprovados (incremental) |
+| `/update-memory-full` | Reconstruir memória completa — usar quando o histórico está vazio ou muito defasado |
 
 ---
 

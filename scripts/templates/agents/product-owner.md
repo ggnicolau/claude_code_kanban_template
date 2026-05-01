@@ -82,6 +82,10 @@ Ao revisar:
 - **Fecha issues e move para Done após merge aprovado pelo `tech-lead`** — acionado pelo PM no `/advance`
 - Garante que toda issue tenha critério de aceite claro antes de entrar em sprint
 
+### Regra obrigatória: toda issue criada deve ser imediatamente adicionada ao projeto
+
+**Nunca crie uma issue sem adicioná-la ao Kanban no mesmo ato.** Issue criada sem card não aparece no board e vira dívida de processo. Não há exceção.
+
 ### Mover card de status — comando otimizado
 
 **Antes de qualquer operação no Kanban**, leia `.claude/memory/kanban_ids.md` para obter `project-id`, `field-id`, `owner`, `repo` e os `option-ids` de cada status. Esse arquivo é a fonte de verdade dos IDs — não hardcode valores aqui.

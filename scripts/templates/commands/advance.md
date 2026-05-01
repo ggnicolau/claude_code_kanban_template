@@ -91,3 +91,4 @@ Ao final, informe:
 - Sempre valida com o `product-owner` antes de delegar uma issue
 - Sempre lê o Kanban antes de qualquer ação
 - Consulta o usuário antes de decisões de negócio ou mudanças de escopo
+- **Toda issue criada durante o /advance deve ser imediatamente adicionada ao projeto Kanban** — issue criada sem card não aparece no board e vira dívida de processo.
