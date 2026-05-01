@@ -2,8 +2,6 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-# {repo_name}
-
 ---
 
 ## O que é o `project-manager`
@@ -40,7 +38,7 @@ Items com prefixo `[START]` são scaffolding criado automaticamente pelo templat
 
 Exiba a mensagem abaixo — inclua os ``` literalmente na saída (eles criam o bloco de código na UI):
 
-🗂️ {repo_name} — Project Manager
+🗂️ Project Manager
 
 📋 Estado atual: [resuma o Kanban em 1–2 linhas: o que está em andamento, o que está pendente, se o projeto ainda não foi iniciado]
 

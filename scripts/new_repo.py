@@ -342,9 +342,9 @@ def cleanup_template_files(destination: Path, repo_name: str) -> None:
     for tpl_name in ("CLAUDE.md", "AGENTS.md"):
         tpl_path = templates_dir / tpl_name
         if tpl_path.exists():
-            content = tpl_path.read_text(encoding="utf-8").replace(
-                "{repo_name}", repo_name
-            )
+            content = tpl_path.read_text(encoding="utf-8")
+            if tpl_name == "AGENTS.md":
+                content = content.replace("{repo_name}", repo_name)
             (destination / tpl_name).write_text(content, encoding="utf-8")
 
     # Copia README.md para o filho
