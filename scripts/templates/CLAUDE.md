@@ -228,11 +228,13 @@ Este projeto inclui 13 agentes em `.claude/agents/`. O ponto de entrada padrão 
 
 O kanban é a **fonte de verdade** do processo. Nenhum agente age sem consultar o kanban.
 
+**Se precisar consultar issues e cards no Kanban** (project-number, owner, IDs de status), leia `.claude/memory/kanban_ids.md` — é a fonte de verdade dos IDs do projeto.
+
 | Papel | Agente | Permissões |
 |---|---|---|
 | Dono | `product-owner` | cria, fecha, move qualquer card, árbitro final |
 | Leitor obrigatório | `project-manager` | lê o kanban antes de toda delegação |
-| Criador de issues | `project-manager`, `product-owner` | abrem issues novas |
+| Criador de issues | `project-manager`, `product-owner` | abrem issues novas — **sempre adicionam ao projeto Kanban imediatamente após criar** |
 | Atualizador | todos os especialistas | move o próprio card para `In Progress` e `In Review` |
 | Fechador | `product-owner` + `tech-lead` | movem para `Done` após aprovação |
 
