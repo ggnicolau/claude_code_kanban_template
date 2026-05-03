@@ -146,75 +146,107 @@ O PR chega mais bem especificado — a colaboração acontece antes de implement
 
 ## Arquitetura Dual Multi-Agent System
 
-Este projeto adota o padrão **Dual Multi-Agent System** — dois mundos claramente separados, ambos operados pelos mesmos 13 agentes mas com regras diferentes:
+Este projeto adota o padrão **Dual Multi-Agent System** — dois mundos claramente separados, ambos operados pelos mesmos 13 agentes, com regras diferentes em cada um.
 
-### Mundo 1 — Sistema/Backoffice (raiz do repo)
+### Mundo 1 — Sistema / Backoffice (raiz do repo)
 
-Onde o sistema agentic vive. Estrutura **rígida e padronizada** — todo projeto Cadeira Vazia herda do enterprise-template.
+Onde o sistema agentic vive. Estrutura **rígida e padronizada** — todo projeto herda do enterprise-template e mantém a estrutura. Os agentes atuam neste mundo quando trabalham em **infraestrutura, configuração, documentação institucional, código produtizado, dados, testes**.
 
 ```
-.claude/                ← agentes, commands, hooks, memória
+.claude/                ← agentes, commands, hooks, memória, settings
 CLAUDE.md, AGENTS.md    ← regras do sistema agentic
-pyproject.toml, uv.lock ← infra Python
-docs/                   ← documentação produzida pelos agentes (estrutura abaixo)
+README.md, pyproject.toml, uv.lock, .gitignore  ← infra do projeto
+docs/                   ← documentação por agente (.md, .pdf, .pptx, .docx)
 data/                   ← pipelines de dados (raw/bronze/silver/gold)
-scripts/                ← utilitários do sistema
-src/                    ← código produtizado
+scripts/                ← utilitários e automações do sistema
+src/                    ← código produtizado (importável, testável)
 tests/                  ← suíte de testes
 ```
 
-Commits que mexem aqui usam escopo `(system)`: `chore(system): ...`, `docs(system): ...`.
+**Cada raiz tem propósito claro:**
+- `docs/` → **só documentos** (.md, .pdf, .pptx, .docx) e seus assets de geração. Nunca código `.py` produtizado.
+- `src/` → **só código importável** (módulos Python, classes, funções).
+- `scripts/` → **só automações executáveis** (CLI, jobs, geradores como `gen_pptx.js`, `gen_xlsx.py`).
+- `data/` → **só dados** (parquet, csv, json) — nunca documento ou código.
+- `tests/` → **só testes**.
+
+Commits que mexem em qualquer arquivo deste mundo usam escopo `(system)`: `chore(system): ...`, `docs(system): ...`, `feat(system): ...`.
 
 ### Mundo 2 — Produtos (`products/<produto>/`)
 
-Onde os produtos vivem. Estrutura **livre por produto** — cada produto define o próprio formato (briefings, runs, configurações próprias).
+Onde os produtos vivem. **Estrutura livre por produto** — cada produto define o próprio formato (briefings, runs, configurações, layouts). Os agentes atuam neste mundo quando trabalham nos artefatos de cada produto.
 
 ```
 products/
-├── <produto-a>/                      ← um produto (estrutura livre)
-│   ├── <config-do-produto>.md
+├── <produto-a>/                     ← um produto (estrutura livre, definida pelo produto)
+│   ├── <config>.md
 │   └── <sub-rotina>/
-│       └── runs/<YYYY-MM-DD>/        ← uma execução
+│       └── runs/<YYYY-MM-DD>/       ← uma execução
 ├── <produto-b>/...
 ```
 
-Commits que mexem aqui usam escopo do produto ou sem escopo: `feat: ...`, `docs: ...`.
+**Importante:** dentro de `products/<produto>/` **não há pasta-por-agente**. A estrutura é definida pelo produto e segue a lógica do que aquele produto produz, não a lógica de quem o produz.
+
+Commits que mexem aqui usam escopo do produto ou nenhum escopo: `feat: ...`, `docs: ...`, `feat(<produto>): ...`.
 
 ### Regra de fronteira
 
-Os agentes alternam entre os dois mundos conforme a tarefa. Quando estão no Mundo 1, **as regras de sistema valem** (estrutura rígida, versionamento documental obrigatório, escopo `(system)` no commit). Quando estão no Mundo 2 dentro de `products/<produto>/`, **a estrutura é o que o produto define** — as regras de sistema (Conventional Commits, Kanban, branching) continuam valendo, mas a forma dos artefatos é livre.
+Os agentes alternam entre os dois mundos conforme a tarefa:
+
+- **No Mundo 1** valem todas as regras de sistema: estrutura rígida, pasta-por-agente em `docs/`, versionamento documental obrigatório, frontmatter YAML em todo `.md` de `docs/`, escopo `(system)` no commit.
+- **No Mundo 2** as regras de Conventional Commits, Kanban e branching continuam — mas a **forma dos artefatos é livre**, definida pelo produto. Não use `docs/<bucket>/<agente>/` para artefatos de produto.
+
+Quando uma tarefa cruza os dois mundos (ex: refatorar pipeline de produto que afeta `src/`), o commit pode usar escopo composto (`feat: ... + chore(system): ...` em commits separados) ou escopo do produto se a mudança principal é no produto.
 
 ---
 
-## Estrutura de `docs/`
+## Estrutura de `docs/` (Mundo 1)
 
-`docs/` está dentro do Mundo 1 (Sistema). É **organizado por agente** — cada agente escreve apenas em sua própria pasta:
+`docs/` é **organizado por agente** — cada agente escreve apenas em sua própria pasta. Ali ficam **só documentos** (.md, .pdf, .pptx, .docx) e os assets necessários para gerá-los. Código produtizado nunca vai aqui — vai em `src/` ou `scripts/`.
 
 ```
 docs/
-├── business/                    ← agentes de negócio
-│   ├── product-owner/
-│   ├── marketing-strategist/
-│   ├── researcher/
-│   └── project-manager/
-├── tech/                        ← agentes técnicos
-│   ├── tech-lead/
-│   ├── data-engineer/
-│   ├── data-scientist/
-│   ├── ml-engineer/
-│   ├── ai-engineer/
-│   ├── frontend-engineer/
-│   ├── infra-devops/
-│   ├── qa/
-│   └── security-auditor/
-└── (subpastas legadas — research/, product/, process/, setup/, updates/, generated/)
+├── business/                                  ← agentes de negócio
+│   ├── product-owner/         → backlog, critérios de aceite, /personas, /prd, /roadmap-update, /sprint-planning
+│   │   └── assets/            → wireframes, prints de Linear/Jira, planilhas de priorização
+│   ├── marketing-strategist/  → pitch, posicionamento, /go-to-market, /competitive-brief, briefings editoriais
+│   │   └── assets/            → mockups de campanha, scripts gen_pptx.js, imagens de redes sociais
+│   ├── researcher/            → /research, /synthesize-research, /competitive-analysis, benchmarks
+│   │   └── assets/            → dados brutos de entrevistas, fontes, tabelas de apoio
+│   └── project-manager/       → /kickoff (relatório + apresentação), /stakeholder-update, status updates
+│       └── assets/            → scripts gen_pptx.js, gráficos para apresentações executivas
+└── tech/                                      ← agentes técnicos
+    ├── tech-lead/             → /architecture, /system-design, /tech-debt, ADRs, code review reports
+    │   └── assets/            → diagramas de arquitetura, ADRs de apoio
+    ├── data-engineer/         → schemas, contratos de dados, docs de pipeline ETL/ELT
+    │   └── assets/            → diagramas de fluxo, exemplos de schema, dicionários de dados
+    ├── data-scientist/        → análises exploratórias, relatórios estatísticos, /research (quanti)
+    │   └── assets/            → notebooks .ipynb, datasets de exemplo, gráficos
+    ├── ml-engineer/           → model cards, runbooks de treino/serving, monitoramento de drift
+    │   └── assets/            → métricas de modelo, configurações de pipeline ML
+    ├── ai-engineer/           → eval reports, prompt design docs, fluxos de agente, RAG
+    │   └── assets/            → suites de eval, exemplos de prompt, fluxos visuais
+    ├── frontend-engineer/     → guias UI, design specs, /accessibility-review
+    │   └── assets/            → mockups, design tokens, screenshots de a11y
+    ├── infra-devops/          → /deploy-checklist, /incident-response, runbooks, IaC docs
+    │   └── assets/            → diagramas de cloud, postmortems, configs IaC
+    ├── qa/                    → /testing-strategy, planos de teste, relatórios de cobertura, bug reports
+    │   └── assets/            → planilhas de cobertura, relatórios de execução
+    └── security-auditor/      → /security-review, threat models, OWASP checks
+        └── assets/            → relatórios de vulnerabilidade, threat models, evidências
 ```
+
+**Anatomia da entrada:**
+- Nome da pasta do agente
+- `→` lista de commands que escrevem ali + tipos de artefato esperados
+- `└── assets/` subpasta para arquivos de apoio (dados brutos, scripts geradores, imagens, datasets)
 
 Regras:
 - **Cada agente escreve apenas em sua própria pasta** (`docs/business/<agente>/` ou `docs/tech/<agente>/`).
-- **Nenhum agente salva documento diretamente em `docs/` raiz** — sempre na subpasta do agente.
+- **Nenhum agente salva documento diretamente em `docs/` raiz** — sempre na pasta do agente.
+- **Documentos** (.md, .pptx, .pdf, .docx) vão direto na pasta do agente.
+- **Arquivos de apoio** (dados brutos, scripts geradores tipo `gen_pptx.js`/`gen_xlsx.py`, imagens, datasets) ficam em `<pasta-agente>/assets/`.
 - Cada pasta de agente tem `.gitkeep` para versionar a estrutura mesmo vazia.
-- As subpastas legadas (`research/`, `product/`, etc.) podem conter material histórico — não criar conteúdo novo lá.
 
 ### Frontmatter YAML obrigatório
 
