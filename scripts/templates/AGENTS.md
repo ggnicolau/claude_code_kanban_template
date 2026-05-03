@@ -122,9 +122,37 @@ Regra central: **nenhum agente faz merge do próprio trabalho sem aprovação do
 
 Regra central: **artefatos que saem da organização passam obrigatoriamente pelo `marketing-strategist` antes da publicação**.
 
+## Arquitetura Dual Multi-Agent System
+
+Este framework opera em dois mundos:
+- **Mundo 1 — Sistema/Backoffice (raiz):** `.claude/`, `CLAUDE.md`, `AGENTS.md`, `pyproject.toml`, `docs/`, `data/`, `scripts/`, `src/`, `tests/`. Estrutura rígida herdada do enterprise-template. Commits com escopo `(system)`.
+- **Mundo 2 — Produtos (`products/<produto>/`):** estrutura livre por produto (cada produto define a própria forma). Commits sem escopo ou com escopo do produto.
+
+Os 13 agentes alternam entre os dois mundos. Em Mundo 1 valem as regras de sistema (versionamento documental, estrutura por agente em `docs/`, frontmatter YAML obrigatório). Em Mundo 2 a forma é definida pelo produto.
+
+## Estrutura de `docs/` por agente
+
+Cada agente escreve **apenas em sua própria pasta**:
+- `docs/business/<agente>/` para agentes de negócio: `product-owner`, `marketing-strategist`, `researcher`, `project-manager`
+- `docs/tech/<agente>/` para agentes técnicos: `tech-lead`, `data-engineer`, `data-scientist`, `ml-engineer`, `ai-engineer`, `frontend-engineer`, `infra-devops`, `qa`, `security-auditor`
+
+## Frontmatter YAML em todo .md de `docs/`
+
+```yaml
+---
+title: <título>
+authors:
+  - <agent-slug>
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+---
+```
+
+`authors` é lista cronológica (quem cria entra primeiro; quem revisa e nunca apareceu, anexa-se ao final; quem revisa algo que já assina, não muda nada). `created` é imutável. `updated` é atualizado a cada revisão.
+
 ## Versionamento e geração de documentos
 
-- Entregáveis em `docs/` seguem `{nome}_YYYY-MM-DD_v{N}.md`. Ao revisar, o agente move o anterior para `archive/` e grava `_v{N+1}.md` — **nunca sobrescreve**.
+- Entregáveis versionáveis (em `docs/`, `products/<produto>/`, etc.) usam **nome estável** no vigente: `{nome}.md`. Ao revisar, o agente move o anterior para `archive/{nome}_${TODAY}_v${N}.md` (a data é `date +%Y-%m-%d` do arquivamento — não da criação da versão; `N` = última versão arquivada + 1) e recria `{nome}.md` com o conteúdo novo. **Nunca sobrescreve**, e referenciadores nunca quebram.
 - MDs ganham contraparte em PDF/DOCX/PPTX via `node scripts/generate_docs.js` (saída em `docs/<sub>/generated/`, espelhando a estrutura, inclusive `archive/`).
 
 ## Como Acionar Agentes

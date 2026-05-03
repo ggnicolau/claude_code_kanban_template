@@ -144,52 +144,161 @@ O PR chega mais bem especificado — a colaboração acontece antes de implement
 
 ---
 
-## Estrutura de Documentação
+## Arquitetura Dual Multi-Agent System
 
-Todos os documentos gerados por commands devem ser salvos em `docs/` seguindo esta estrutura:
+Este projeto adota o padrão **Dual Multi-Agent System** — dois mundos claramente separados, ambos operados pelos mesmos 13 agentes, com regras diferentes em cada um.
+
+### Mundo 1 — Sistema / Backoffice (raiz do repo)
+
+Onde o sistema agentic vive. Estrutura **rígida e padronizada** — todo projeto herda do enterprise-template e mantém a estrutura. Os agentes atuam neste mundo quando trabalham em **infraestrutura, configuração, documentação institucional, código produtizado, dados, testes**.
+
+```
+.claude/                ← agentes, commands, hooks, memória, settings
+CLAUDE.md, AGENTS.md    ← regras do sistema agentic
+README.md, pyproject.toml, uv.lock, .gitignore  ← infra do projeto
+docs/                   ← documentação por agente (.md, .pdf, .pptx, .docx)
+data/                   ← pipelines de dados (raw/bronze/silver/gold)
+scripts/                ← utilitários e automações do sistema
+src/                    ← código produtizado (importável, testável)
+tests/                  ← suíte de testes
+```
+
+**Cada raiz tem propósito claro:**
+- `docs/` → **só documentos** (.md, .pdf, .pptx, .docx) e seus assets de geração. Nunca código `.py` produtizado.
+- `src/` → **só código importável** (módulos Python, classes, funções).
+- `scripts/` → **só automações executáveis** (CLI, jobs, geradores como `gen_pptx.js`, `gen_xlsx.py`).
+- `data/` → **só dados** (parquet, csv, json) — nunca documento ou código.
+- `tests/` → **só testes**.
+
+Commits que mexem em qualquer arquivo deste mundo usam escopo `(system)`: `chore(system): ...`, `docs(system): ...`, `feat(system): ...`.
+
+### Mundo 2 — Produtos (`products/<produto>/`)
+
+Onde os produtos vivem. **Estrutura livre por produto** — cada produto define o próprio formato (briefings, runs, configurações, layouts). Os agentes atuam neste mundo quando trabalham nos artefatos de cada produto.
+
+```
+products/
+├── <produto-a>/                     ← um produto (estrutura livre, definida pelo produto)
+│   ├── <config>.md
+│   └── <sub-rotina>/
+│       └── runs/<YYYY-MM-DD>/       ← uma execução
+├── <produto-b>/...
+```
+
+**Importante:** dentro de `products/<produto>/` **não há pasta-por-agente**. A estrutura é definida pelo produto e segue a lógica do que aquele produto produz, não a lógica de quem o produz.
+
+Commits que mexem aqui usam escopo do produto ou nenhum escopo: `feat: ...`, `docs: ...`, `feat(<produto>): ...`.
+
+### Regra de fronteira
+
+Os agentes alternam entre os dois mundos conforme a tarefa:
+
+- **No Mundo 1** valem todas as regras de sistema: estrutura rígida, pasta-por-agente em `docs/`, versionamento documental obrigatório, frontmatter YAML em todo `.md` de `docs/`, escopo `(system)` no commit.
+- **No Mundo 2** as regras de Conventional Commits, Kanban e branching continuam — mas a **forma dos artefatos é livre**, definida pelo produto. Não use `docs/<bucket>/<agente>/` para artefatos de produto.
+
+Quando uma tarefa cruza os dois mundos (ex: refatorar pipeline de produto que afeta `src/`), o commit pode usar escopo composto (`feat: ... + chore(system): ...` em commits separados) ou escopo do produto se a mudança principal é no produto.
+
+---
+
+## Estrutura de `docs/` (Mundo 1)
+
+`docs/` é **organizado por agente** — cada agente escreve apenas em sua própria pasta. Ali ficam **só documentos** (.md, .pdf, .pptx, .docx) e os assets necessários para gerá-los. Código produtizado nunca vai aqui — vai em `src/` ou `scripts/`.
 
 ```
 docs/
-├── research/       → /research, /competitive-analysis, /synthesize-research
-│   └── assets/     → dados brutos, fontes, tabelas de apoio
-├── product/        → /personas, /prd, /user-journey, /roadmap, /metrics
-│   └── assets/     → wireframes, personas visuais, etc.
-├── business/       → /pitch, /kickoff (relatório + apresentação)
-│   └── assets/     → scripts de geração (gen_pptx.js, gen_xlsx.py), imagens
-├── process/        → /onboarding, /deploy-checklist, /incident-response
-│   └── assets/     → scripts do Excel, templates
-├── tech/           → /architecture, /system-design, /tech-debt, /testing-strategy
-│   └── assets/     → diagramas, ADRs de apoio
-└── updates/        → /stakeholder-update versionado por data (YYYY-MM-DD.md)
-    └── assets/     → gráficos, prints de métricas
+├── business/                                  ← agentes de negócio
+│   ├── product-owner/         → backlog, critérios de aceite, /personas, /prd, /roadmap-update, /sprint-planning
+│   │   └── assets/            → wireframes, prints de Linear/Jira, planilhas de priorização
+│   ├── marketing-strategist/  → pitch, posicionamento, /go-to-market, /competitive-brief, briefings editoriais
+│   │   └── assets/            → mockups de campanha, scripts gen_pptx.js, imagens de redes sociais
+│   ├── researcher/            → /research, /synthesize-research, /competitive-analysis, benchmarks
+│   │   └── assets/            → dados brutos de entrevistas, fontes, tabelas de apoio
+│   └── project-manager/       → /kickoff (relatório + apresentação), /stakeholder-update, status updates
+│       └── assets/            → scripts gen_pptx.js, gráficos para apresentações executivas
+└── tech/                                      ← agentes técnicos
+    ├── tech-lead/             → /architecture, /system-design, /tech-debt, ADRs, code review reports
+    │   └── assets/            → diagramas de arquitetura, ADRs de apoio
+    ├── data-engineer/         → schemas, contratos de dados, docs de pipeline ETL/ELT
+    │   └── assets/            → diagramas de fluxo, exemplos de schema, dicionários de dados
+    ├── data-scientist/        → análises exploratórias, relatórios estatísticos, /research (quanti)
+    │   └── assets/            → notebooks .ipynb, datasets de exemplo, gráficos
+    ├── ml-engineer/           → model cards, runbooks de treino/serving, monitoramento de drift
+    │   └── assets/            → métricas de modelo, configurações de pipeline ML
+    ├── ai-engineer/           → eval reports, prompt design docs, fluxos de agente, RAG
+    │   └── assets/            → suites de eval, exemplos de prompt, fluxos visuais
+    ├── frontend-engineer/     → guias UI, design specs, /accessibility-review
+    │   └── assets/            → mockups, design tokens, screenshots de a11y
+    ├── infra-devops/          → /deploy-checklist, /incident-response, runbooks, IaC docs
+    │   └── assets/            → diagramas de cloud, postmortems, configs IaC
+    ├── qa/                    → /testing-strategy, planos de teste, relatórios de cobertura, bug reports
+    │   └── assets/            → planilhas de cobertura, relatórios de execução
+    └── security-auditor/      → /security-review, threat models, OWASP checks
+        └── assets/            → relatórios de vulnerabilidade, threat models, evidências
 ```
 
+**Anatomia da entrada:**
+- Nome da pasta do agente
+- `→` lista de commands que escrevem ali + tipos de artefato esperados
+- `└── assets/` subpasta para arquivos de apoio (dados brutos, scripts geradores, imagens, datasets)
+
 Regras:
-- **Nenhum agente salva documento diretamente em `docs/` raiz** — sempre na subpasta correspondente.
-- **Scripts de geração de artefatos** (gen_pptx.js, gen_xlsx.py, etc.) ficam em `assets/` da subpasta correspondente.
+- **Cada agente escreve apenas em sua própria pasta** (`docs/business/<agente>/` ou `docs/tech/<agente>/`).
+- **Nenhum agente salva documento diretamente em `docs/` raiz** — sempre na pasta do agente.
+- **Documentos** (.md, .pptx, .pdf, .docx) vão direto na pasta do agente.
+- **Arquivos de apoio** (dados brutos, scripts geradores tipo `gen_pptx.js`/`gen_xlsx.py`, imagens, datasets) ficam em `<pasta-agente>/assets/`.
+- Cada pasta de agente tem `.gitkeep` para versionar a estrutura mesmo vazia.
+
+### Frontmatter YAML obrigatório
+
+Todo `.md` em `docs/` começa com este header:
+
+```yaml
+---
+title: <título do documento>
+authors:
+  - <agent-slug>
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+---
+```
+
+- `authors`: lista de slugs (`data-engineer`, `tech-lead`, ...). Quem cria entra primeiro. Quem revisa e ainda não está na lista, **anexa-se ao final**. Quem revisa algo que já assina, **não muda nada**. Ordem é cronológica de primeiro toque.
+- `created`: data do primeiro write — **imutável**.
+- `updated`: data do último write — atualizada a cada revisão.
 
 ---
 
 ## Versionamento de Documentos
 
-Todo documento em `docs/` segue a convenção obrigatória de versionamento — nunca sobrescreva uma versão anterior.
+Todo documento versionável (em `docs/`, em `products/<rotina>/`, ou qualquer outro local que use a convenção) segue a regra abaixo — nunca sobrescreva uma versão anterior, e o arquivo vigente sempre tem **nome estável**.
 
 ### Convenção de nome
 
 ```
-docs/<subdir>/{nome}_YYYY-MM-DD_v{N}.md
+<dir>/{nome}.md                                       ← VIGENTE (nome estável, sem data, sem versão)
+<dir>/archive/{nome}_YYYY-MM-DD_v{N}.md               ← histórico (data do arquivamento + versão)
 ```
 
-Exemplos: `relatorio_2026-04-28_v1.md`, `apresentacao_2026-04-28_v2.md`, `arquitetura_2026-04-28_v1.md`
+Exemplos:
+- Vigente: `docs/business/project-manager/relatorio.md`, `products/<produto>/<arquivo>.md`
+- Archive: `docs/business/project-manager/archive/relatorio_2026-04-28_v1.md`, `products/<produto>/archive/<arquivo>_2026-05-02_v1.md`
+
+**Semântica da data no archive:** `YYYY-MM-DD` é a **data em que a versão foi arquivada** (saiu de vigência), obtida no momento do `git mv` via `date +%Y-%m-%d`. Não é a data em que a versão foi criada nem a data do último mtime do arquivo. Isso é determinístico e o agente não precisa ler o conteúdo do .md para decidir o nome.
+
+**Por que nome estável no vigente:** quando o arquivo carrega data+versão no nome, todo referenciador precisa ser atualizado a cada revisão. Com nome estável, commands, agentes e scripts nunca quebram — só o conteúdo muda.
 
 ### Fluxo de revisão
 
 Ao revisar um documento existente:
-1. `git mv docs/<subdir>/{nome}_YYYY-MM-DD_v{N}.md docs/<subdir>/archive/{nome}_YYYY-MM-DD_v{N}.md`
-2. Criar `docs/<subdir>/{nome}_YYYY-MM-DD_v{N+1}.md` com o conteúdo revisado
-3. `git commit -m "docs: revise {nome} v{N} → v{N+1} ({motivo})"`
+1. Capture a data de hoje: `TODAY=$(date +%Y-%m-%d)`
+2. Determine `N` = (última versão em `<dir>/archive/{nome}_*_v*.md`) + 1, ou `1` se não há archive
+3. `git mv <dir>/{nome}.md <dir>/archive/{nome}_${TODAY}_v${N}.md`
+4. Recriar `<dir>/{nome}.md` com o conteúdo revisado
+5. `git commit -m "docs: revisar {nome} (v{N} → v{N+1}, {motivo})"`
 
-A pasta `archive/` é gerada automaticamente pelo `generate_docs.js` — não deletar arquivos de archive.
+A pasta `archive/` é criada quando necessário e nunca é deletada — preserva o histórico completo.
+
+**Atenção semântica:** o conteúdo do .md vigente pode ter um header tipo `**Versão:** 6.0 | **Data:** 2026-05-02` — essa data interna é "quando a versão entrou em vigência" e é diferente da data que vai no nome do archive (que é "quando saiu de vigência"). As duas datas convivem sem conflito.
 
 ### Geração de PDF/DOCX/PPTX
 

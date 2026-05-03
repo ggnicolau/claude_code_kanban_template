@@ -221,7 +221,7 @@ Passe o Problem Statement completo ao `researcher`. Aguarde o resultado antes de
 
 Com o discovery e a pesquisa em mãos, **você (PM) escreve** o relatório consolidado.
 
-Salve em `docs/business/relatorio_YYYY-MM-DD_v1.md`. O relatório deve conter:
+Salve em `docs/business/project-manager/relatorio.md` (nome estável; revisões posteriores arquivam o anterior em `docs/business/project-manager/archive/relatorio_YYYY-MM-DD_v{N}.md`). O relatório deve conter:
 - **Contexto e problema** — síntese do discovery com o usuário
 - **Pesquisa** — achados do `researcher`: mercado, concorrentes, benchmarks
 - **Decisões de produto** — o que construir, para quem, por quê agora
@@ -231,7 +231,7 @@ Salve em `docs/business/relatorio_YYYY-MM-DD_v1.md`. O relatório deve conter:
 
 Após salvar:
 ```bash
-node scripts/generate_docs.js docs/business/relatorio_YYYY-MM-DD_v1.md
+node scripts/generate_docs.js docs/business/project-manager/relatorio.md
 git add docs/business/
 git commit -m "docs: add research and planning report"
 git push
@@ -241,7 +241,7 @@ git push
 
 ## Fase 4 — Apresentação (você, PM, produz)
 
-Com o relatório pronto, **você (PM) produz** a apresentação executiva em `docs/business/apresentacao_YYYY-MM-DD_v1.md`.
+Com o relatório pronto, **você (PM) produz** a apresentação executiva em `docs/business/project-manager/apresentacao.md` (nome estável; revisões posteriores arquivam em `docs/business/project-manager/archive/apresentacao_YYYY-MM-DD_v{N}.md`).
 
 Use `anthropic-skills:pptx` para PowerPoint ou escreva em Markdown. A apresentação deve conter:
 - Problema e oportunidade
@@ -252,7 +252,7 @@ Use `anthropic-skills:pptx` para PowerPoint ou escreva em Markdown. A apresenta�
 
 Após salvar:
 ```bash
-node scripts/generate_docs.js docs/business/apresentacao_YYYY-MM-DD_v1.md
+node scripts/generate_docs.js docs/business/project-manager/apresentacao.md
 git add docs/business/
 git commit -m "docs: add executive presentation"
 git push
