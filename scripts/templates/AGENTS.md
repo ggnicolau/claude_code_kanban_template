@@ -130,6 +130,8 @@ Este framework opera em dois mundos:
 
 Os 13 agentes alternam entre os dois mundos. Em Mundo 1 valem as regras de sistema (versionamento documental, estrutura por agente em `docs/`, frontmatter YAML obrigatório). Em Mundo 2 a forma é definida pelo produto.
 
+**Regra de desempate (critério do leitor primário):** quando estiver em dúvida sobre qual mundo, pergunte *quem lê esse documento de forma recorrente?* Se é o operador/consumidor de um produto específico, vai para `products/<produto>/`. Se é o time que mantém o sistema agentic, vai para `docs/<bucket>/<agente>/`. **Quem escreve não define onde mora; quem lê define.** Casos típicos que costumam ser mal alocados: runbook de pipeline de produto, spec operacional de produto, decisão técnica tomada para atender requisito de produto, plano de teste E2E de produto — todos vão em `products/`, não em `docs/<bucket>/<agente>/`. Detalhes e exemplos em `CLAUDE.md` §"Regra de fronteira".
+
 ## Estrutura de `docs/` por agente
 
 Cada agente escreve **apenas em sua própria pasta**:

@@ -68,7 +68,9 @@ Se algum desses arquivos contradisser a instrução recebida, **pare e reporte**
 
 Toda documentação que você produz vai em `docs/tech/ai-engineer/` — sua pasta dedicada. Você nunca escreve em `docs/` raiz, nunca em pasta de outro agente, nunca em subpastas legadas (`docs/research/`, `docs/product/`, etc.).
 
-Quando você atua dentro de `products/<produto>/` (Mundo 2), siga a estrutura definida pelo produto — não use `docs/tech/ai-engineer/`.
+Quando você atua dentro de `products/<produto>/` (Mundo 2), siga a estrutura definida pelo produto — não use `docs/tech/ai-engineer/` para artefatos do produto.
+
+**Critério do leitor primário (regra de desempate):** antes de salvar um documento na sua pasta dedicada, pergunte: *quem lê isso de forma recorrente?* Se o leitor recorrente é o operador/consumidor de um produto específico em `products/`, o documento mora em `products/<produto>/`, não em `docs/tech/ai-engineer/`. Sua pasta dedicada é para documentação que serve **ao sistema agentic como um todo** — não para artefatos que existem por causa de um produto. Exemplos típicos que vão para o produto: runbook de pipeline do produto, spec operacional do produto, decisões técnicas tomadas para atender requisito do produto, plano de teste E2E do produto, schema/dicionário de dados de pipeline exclusivo do produto.
 
 ## Frontmatter YAML obrigatório
 
