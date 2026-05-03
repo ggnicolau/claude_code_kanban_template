@@ -141,22 +141,50 @@ A regra única é: **respeitar a ordem cronológica reversa, em qualquer posiç�
 
 Agrupe por data. Se múltiplos eventos relevantes ocorreram na mesma data, liste todos sob a mesma entrada.
 
-### Passo 5 — Verificar `user_profile.md` e `project_genesis.md`
+### Passo 5 — Auditar e propor mudanças em `user_profile.md` e `project_genesis.md`
 
-Verifique se algo no histórico (recente ou antigo, recém-descoberto) justifica atualizar:
-- `user_profile.md` → nova parceria, advisor, mudança de contexto do fundador
-- `project_genesis.md` → pivot de visão, nova exclusão estratégica, mudança de ancoragem, **virada de fundamento identificada na auditoria narrativa do Passo 3**
+#### `project_genesis.md` — vivo, mas mudanças são propostas (não aplicadas automaticamente)
 
-**`project_genesis.md` é vivo, não congelado:** reflete o estado atual da visão e das ancoragens, não uma foto da gênese. Quando uma ancoragem é adicionada, removida ou revisada por causa de uma virada de fundamento, **atualize a seção principal correspondente** (Ancoragens estratégicas, Exclusões, etc.) **e registre a mudança na seção `## Notas de evolução` no fim do arquivo** — preserva o rastro histórico sem deixar agentes lerem informação desatualizada acima.
+`project_genesis.md` é vivo (reflete estado atual da visão), mas é **arquivo curado**: agentes confiam nele para se orientar, então mudanças têm peso. **O command deve propor mudanças no Passo 7, não aplicar diretamente** — usuário decide. Diferente do `project_history.md`, onde o command escreve direto.
 
-Formato da entrada em `## Notas de evolução`:
+**Princípio de densidade (formato (a) — pouca quantidade, muita densidade):**
+
+Genesis tem **poucas ancoragens** e **poucas exclusões**, mas **cada bullet é uma frase densa**: motivação + restrição/escopo + referência a PR/issue quando faz sentido. Sem parágrafos. Sem listas dentro de listas. Genesis mantém-se enxuto e legível em uma tela.
+
+**Auditoria a executar (em silêncio — material para o relatório do Passo 7):**
+
+**(a) Validar ancoragens existentes** — para cada bullet em "Ancoragens estratégicas desejadas" e "Exclusões explícitas":
+- **Continua válida?** Algum PR/issue recente contradiz a ancoragem? Se sim, propor revisão.
+- **Foi reforçada por entregáveis concretos?** Se a redação ainda é aspiracional ("queremos que…", "deve ser…") mas hoje é fato implementado, propor reescrita densa: motivação + materialização + cita PR.
+- **Foi contradita por uma decisão?** Propor revisão de redação ou nova entrada em Notas de evolução.
+
+**(b) Detectar ancoragens emergentes** — varra o `project_history.md` e os PRs/issues recentes em busca de **padrões repetidos** que viraram ancoragem de fato sem nunca terem sido formalizadas. Sinais:
+- Termo/conceito que aparece em 3+ entradas do history (ex: vocabulário recorrente, decisão repetida)
+- Restrição implícita seguida em múltiplas entregas (ex: "nunca fazemos X" sem ter sido escrito)
+- Padrão de design/arquitetura que se consolidou através de várias decisões
+
+Cada padrão emergente vira **candidato a ancoragem nova** com proposta de redação densa.
+
+**(c) Detectar exclusões emergentes** — mesma lógica para "Exclusões explícitas": decisões de "não fazer X" que repetiram no histórico mas não estão formalmente listadas.
+
+**Saída desta auditoria:** lista de candidatos (mudanças, ancoragens novas, exclusões novas) — vai para o relatório do Passo 7. **Não aplicar nada no arquivo nesta etapa**, exceto:
+
+**Exceção (única atualização automática permitida):** se durante a conversa **atual** o usuário aprovou explicitamente uma mudança no genesis, o command aplica **e** registra automaticamente em `## Notas de evolução` com formato:
+
 ```
 - **YYYY-MM-DD** — [O que mudou onde] após [PR/issue de referência]. Antes desta data, [estado anterior]; agora [estado novo].
 ```
 
-Se o arquivo ainda não tem `## Notas de evolução`, crie a seção no fim. Se uma virada não muda ancoragem nenhuma, não toque no arquivo.
+Se o arquivo ainda não tem `## Notas de evolução`, criar a seção no fim antes de adicionar a entrada.
 
-Para `user_profile.md` não há regra de "vivo vs. congelado" — atualize diretamente apenas se houver mudança de contexto do fundador.
+#### `user_profile.md` — atualização direta apenas em mudança de contexto do fundador
+
+Não há regra de "vivo vs. congelado" para o user_profile. Atualize diretamente **apenas** se houver:
+- Nova parceria, advisor ou contratação
+- Mudança de situação profissional (sai de sabbatical, novo trabalho, fundação de empresa)
+- Mudança relevante de stack ou expertise técnica explicitada
+
+Se nada disso aconteceu, não toque no arquivo.
 
 ### Passo 6 — Commit e push
 
@@ -181,7 +209,20 @@ Informe ao usuário, separando claramente:
 - Período coberto pela varredura (data do primeiro commit até hoje)
 - **Viradas compostas identificadas pela auditoria narrativa** — liste cada uma com os PRs/issues que a compõem, e a frase-chave que captura o fundamento que mudou
 - Se `user_profile.md` foi alterado e por quê
-- Se `project_genesis.md` teve seção principal atualizada **e/ou** entrada nova em `## Notas de evolução` (separar os dois)
+
+**Auditoria do `project_genesis.md` — propostas para o usuário decidir:**
+
+Liste em formato decisão sim/não. Nunca aplicar essas mudanças sem confirmação na conversa atual.
+
+- **Ancoragens existentes a revisar** — para cada uma: ancoragem atual, motivo da revisão (foi reforçada / foi contradita / aspiracional virou fato), proposta de nova redação densa
+- **Ancoragens emergentes candidatas** — para cada padrão detectado em (b): qual padrão, quantas entradas/PRs evidenciam, proposta de redação densa
+- **Exclusões emergentes candidatas** — mesma estrutura para exclusões
+- Se nada surgiu na auditoria, declarar explicitamente: "Genesis auditado, nada a propor"
+
+**Mudanças aplicadas automaticamente (apenas o que foi aprovado pelo usuário na conversa atual):**
+- Se houve, listar a mudança no arquivo + entrada criada em `## Notas de evolução`
+
+**Outras seções finais:**
 - Se houve informação que não conseguiu classificar (para decisão do usuário)
 
 Sem este reporte granular, fica impossível para o usuário saber se a varredura foi mesmo completa ou se foi feita só no topo.
