@@ -84,12 +84,32 @@ Para **cada data** com atividade no Passo 2, compare:
 - Entregáveis significativos aprovados pelo fundador
 - Pivots ou mudanças de direção com contexto do porquê
 - Marcos importantes (primeira publicação real, primeiro run completo, etc.)
+- **Fechamento de lacuna estrutural ou virada de fundamento** — quando uma combinação de entregas tira o projeto de um plano provisório/arbitrário e coloca num plano fundamentado/citável (ver auditoria narrativa abaixo)
 
 **O que não entra:**
 - Bugs corrigidos sem impacto na direção do projeto
 - Detalhes de implementação (campo X adicionado, função Y refatorada)
 - Progresso operacional rotineiro de issues
 - Mudanças de infraestrutura agentic (agentes, hooks, memória) sem impacto editorial — ficam no git log
+
+#### Auditoria narrativa — buscar viradas compostas
+
+Algumas viradas importantes são **compostas**: emergem da combinação de 2-3 PRs/issues que isoladamente parecem técnicos, mas juntos representam o fechamento de uma lacuna estrutural ou um realinhamento de fundamento. A varredura técnica isolada perde essa narrativa.
+
+Para cada cluster de PRs/issues que você está prestes a documentar como entradas separadas, pergunte:
+
+1. **Isso é só implementação ou muda um fundamento?** (ex: critério passou de arbitrário para citável; estimativa virou fato; opinião virou base legal/regulatória)
+2. **Esses 2-3 itens contam uma história junto que nenhum deles conta sozinho?** Se sim, **agrupe numa única entrada-narrativa** com sub-bullets, em vez de espalhar em entradas independentes.
+3. **Isso muda alguma ancoragem do `project_genesis.md`?** Se sim, há trabalho adicional no Passo 5.
+
+**Padrões universais de viradas compostas (exemplos genéricos):**
+
+- Pesquisa de fundamentação + materialização em código + filtro/regra que aplica o fundamento → "fundamento legal/regulatório que tira critério do arbítrio"
+- Bug crítico em produção + investigação que muda entendimento + reescrita do componente → "redefinição de domínio depois de aprender com a falha"
+- Decisão de produto + mudança de arquitetura + mudança de copy/UX → "pivot que atravessa camadas"
+- Restrição descoberta + workaround + decisão de não-fazer derivada → "limite que define escopo"
+
+**Regra de ouro:** se ler as 3 entradas isoladas faz alguém perder a história, errado fazê-las separadas. Agrupe.
 
 ### Passo 4 — Reconstruir incrementalmente, em qualquer posição
 
@@ -125,9 +145,18 @@ Agrupe por data. Se múltiplos eventos relevantes ocorreram na mesma data, liste
 
 Verifique se algo no histórico (recente ou antigo, recém-descoberto) justifica atualizar:
 - `user_profile.md` → nova parceria, advisor, mudança de contexto do fundador
-- `project_genesis.md` → pivot de visão, nova exclusão estratégica, mudança de ancoragem
+- `project_genesis.md` → pivot de visão, nova exclusão estratégica, mudança de ancoragem, **virada de fundamento identificada na auditoria narrativa do Passo 3**
 
-Se não houver mudança, não toque nesses arquivos.
+**`project_genesis.md` é vivo, não congelado:** reflete o estado atual da visão e das ancoragens, não uma foto da gênese. Quando uma ancoragem é adicionada, removida ou revisada por causa de uma virada de fundamento, **atualize a seção principal correspondente** (Ancoragens estratégicas, Exclusões, etc.) **e registre a mudança na seção `## Notas de evolução` no fim do arquivo** — preserva o rastro histórico sem deixar agentes lerem informação desatualizada acima.
+
+Formato da entrada em `## Notas de evolução`:
+```
+- **YYYY-MM-DD** — [O que mudou onde] após [PR/issue de referência]. Antes desta data, [estado anterior]; agora [estado novo].
+```
+
+Se o arquivo ainda não tem `## Notas de evolução`, crie a seção no fim. Se uma virada não muda ancoragem nenhuma, não toque no arquivo.
+
+Para `user_profile.md` não há regra de "vivo vs. congelado" — atualize diretamente apenas se houver mudança de contexto do fundador.
 
 ### Passo 6 — Commit e push
 
@@ -150,7 +179,9 @@ Informe ao usuário, separando claramente:
 
 **Outras seções:**
 - Período coberto pela varredura (data do primeiro commit até hoje)
-- Se `user_profile.md` ou `project_genesis.md` foram alterados e por quê
+- **Viradas compostas identificadas pela auditoria narrativa** — liste cada uma com os PRs/issues que a compõem, e a frase-chave que captura o fundamento que mudou
+- Se `user_profile.md` foi alterado e por quê
+- Se `project_genesis.md` teve seção principal atualizada **e/ou** entrada nova em `## Notas de evolução` (separar os dois)
 - Se houve informação que não conseguiu classificar (para decisão do usuário)
 
 Sem este reporte granular, fica impossível para o usuário saber se a varredura foi mesmo completa ou se foi feita só no topo.
