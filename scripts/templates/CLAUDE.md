@@ -198,6 +198,27 @@ Os agentes alternam entre os dois mundos conforme a tarefa:
 
 Quando uma tarefa cruza os dois mundos (ex: refatorar pipeline de produto que afeta `src/`), o commit pode usar escopo composto (`feat: ... + chore(system): ...` em commits separados) ou escopo do produto se a mudança principal é no produto.
 
+#### Critério do leitor primário (regra de desempate)
+
+Quando estiver em dúvida se um documento vai para Mundo 1 ou Mundo 2, pergunte: **quem é o leitor recorrente desse documento?**
+
+- Leitor recorrente é o **operador/consumidor de um produto** (você executando o produto, agentes do command que roda o produto, time editorial daquele produto) → Mundo 2 (`products/<produto>/`).
+- Leitor recorrente é o **time que mantém o sistema agentic** (você decidindo arquitetura do agentic, agentes lendo regras do sistema, onboarding de novos agentes) → Mundo 1 (`docs/<bucket>/<agente>/`).
+
+Quem **escreve** o documento não define onde ele mora. Quem **lê de forma recorrente** define.
+
+Casos típicos que costumam ser mal alocados:
+- Runbook de pipeline de produto → vai em `products/<produto>/`, não em `docs/tech/infra-devops/`. (O `infra-devops` é autor; quem lê quando o pipeline quebra é o operador do produto.)
+- Spec operacional / decisão de arquitetura tomada **para atender requisito de um produto** → vai em `products/<produto>/`, não em `docs/tech/tech-lead/`.
+- Plano de teste E2E de um produto → vai em `products/<produto>/`, não em `docs/tech/qa/`.
+- Schema/dicionário de dados de um pipeline que existe **só para um produto** → vai em `products/<produto>/`, não em `docs/tech/data-engineer/`.
+
+Casos que ficam em Mundo 1:
+- ADR sobre escolha de framework do sistema agentic.
+- Runbook de CI/CD do próprio sistema (workflow do GitHub Actions, secrets do repo).
+- Research sobre alternativas de LLM, benchmark de framework.
+- Documentação de personas, pitch, posicionamento que vale para **toda a organização**, não para um produto específico.
+
 ---
 
 ## Estrutura de `docs/` (Mundo 1)
