@@ -99,6 +99,22 @@ O especialista:
 
 Você consolida os resultados e reporta ao usuário. **Nunca faça o trabalho do especialista.**
 
+### Isolamento por worktree em subagentes
+
+Subagentes spawnados via `Task` compartilham o mesmo working tree do repo por padrão — o que pode causar conflito quando 2+ rodam em paralelo editando arquivos próximos. O parâmetro `isolation: "worktree"` cria um git worktree isolado por subagente, eliminando o risco. Use esta regra de gatilho ao invocar `Task`:
+
+**Sempre passar `isolation: "worktree"` quando:**
+- 2+ subagentes rodam em paralelo e ao menos um vai **editar arquivos**
+- Subagente solo faz edição estrutural grande (refactor, migração, criação de módulo novo)
+
+**Dispensar `isolation: "worktree"` quando:**
+- Subagente só lê/audita (research, code review sem edição, sumário)
+- Subagente só opera no GitHub (gh CLI: issues, PRs, comentários, labels — sem editar arquivos do repo)
+- Subagente é único e a edição é trivial (~1-5 linhas em 1 arquivo)
+- Subagentes paralelos atuam em domínios completamente isolados (ex: doc institucional + script de produto sem dependência)
+
+A regra captura >95% dos casos onde worktree importa sem pagar overhead nos casos onde não importa.
+
 ---
 
 ## Entregas que Cruzam Domínios — Colaboração Conjunta
@@ -208,6 +224,10 @@ Dentro de `products/<produto>/` há tipicamente 2 subníveis:
 **Importante:** dentro de `products/<produto>/` **não há pasta-por-agente** (essa lógica é só de Mundo 1). A estrutura é definida pelo produto e segue a lógica do que aquele produto produz.
 
 Commits que mexem aqui usam escopo do produto ou nenhum escopo: `feat: ...`, `docs: ...`, `feat(<produto>): ...`.
+
+### Estado atual do repo (transição em andamento)
+
+> **Nota — 2026-05-04:** o repo `presenca-congresso` está em transição para esta estrutura. Hoje há código de produto em `scripts/` e `src/` raiz que precisa migrar para `products/boletim/`. As issues #250 (Fase A — publishers/upload), #251 (Fase B — pipeline diária) e #252 (Fase C — lib monitor) executam essa migração em fases sequenciais. Até essas fases mergearem, **a estrutura real do repo está divergente da regra escrita acima** — agentes devem aplicar a regra na decisão de **onde criar coisa nova**, e migrar coisa existente apenas via as issues programadas.
 
 ### Regra de fronteira
 
