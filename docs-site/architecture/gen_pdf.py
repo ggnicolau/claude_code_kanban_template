@@ -487,6 +487,9 @@ def build_pdf(md_path, out_path):
     print('PDF gerado:', out_path)
 
 
-import os
-os.makedirs('output/editorial/diaria/test', exist_ok=True)
-build_pdf('dual_article.md', 'output/editorial/diaria/test/dual-system-v5.pdf')
+if __name__ == '__main__':
+    here = os.path.dirname(os.path.abspath(__file__))
+    build_pdf(
+        os.path.join(here, 'dual-system.md'),
+        os.path.join(here, 'dual-system.pdf'),
+    )

@@ -1,57 +1,35 @@
 # [EPIC] Encapsular Dual Multi-Agent System como produto web B2B com UI controlada, runtime privado e GitHub do cliente como source of truth
 
+## Índice
+
+1. [Contexto e tese de produto](#contexto)
+2. [Diferenciação e hipótese de mercado](#diferenciação-e-hipótese-de-mercado)
+3. [Template atual e capacidades existentes](#o-que-o-template-atual-já-entrega)
+4. [Objetivo e arquitetura alvo](#objetivo)
+5. [Separação system/platform/project](#separação-de-domínios)
+6. [Dual-plane: construção e execução](#dual-plane-support-construção-e-execução)
+7. [UI, executor e ferramentas avaliadas](#avaliação-de-opções-reais-de-ui-e-executor)
+8. [API, fluxos, isolamento e GitHub](#backendapi-própria)
+9. [Infraestrutura beta](#infraestrutura-beta)
+10. [Modelo comercial e posicionamento](#modelo-comercial-beta)
+11. [Cronograma, riscos e critérios de aceite](#estimativa-de-prazo)
+12. [Resultado esperado](#resultado-esperado)
+
+---
+
 ## Contexto
 
 O Dual Multi-Agent System atualmente roda via Claude Code.
 
 Ele nasceu como uma arquitetura operacional codificada em arquivos `.md`, acumulando experiência prática de engenharia, gestão de projetos, produto, coordenação, governança, TI e IA.
 
-O valor do sistema não está apenas nos arquivos em si, mas na metodologia operacional que eles codificam:
+O valor do sistema não está apenas nos arquivos em si, mas na metodologia operacional que eles codificam: papéis claros, cadeia de comando, Kanban como memória operacional, gates de aprovação, rastreabilidade por issues, PRs e commits, separação entre construção e execução, agentes especializados, commands, hooks, skills, memória persistente, feedback loop execução -> construção e adaptação por domínio/cliente.
 
-- papéis claros;
-- cadeia de comando;
-- Kanban como memória operacional;
-- gates de aprovação;
-- rastreabilidade por issues, PRs e commits;
-- separação entre construção e execução;
-- agentes especializados;
-- commands;
-- hooks;
-- skills;
-- memória persistente;
-- feedback loop execução -> construção;
-- adaptação por domínio/cliente.
+O Claude Code funciona bem como ambiente de desenvolvimento porque permite carregar `CLAUDE.md`, `AGENTS.md` e agents especializados; executar hooks como `session_start`; usar commands; consultar memória persistente; operar sobre GitHub/Kanban; executar pipelines de construção e execução; conversar livremente com o usuário; e acionar subagentes e tools.
 
-O Claude Code funciona bem como ambiente de desenvolvimento porque permite:
+Porém, esse modelo não é adequado para distribuição comercial. A UI do Claude Code é fechada, não permite adaptação suficiente, não permite remover painéis ou restringir superfícies e não permite criar uma experiência controlada para cliente. Além disso, o runtime pressupõe acesso completo ao workspace: o usuário pode ver arquivos internos, copiar arquivos de sistema, modificar regras do sistema e operar sem uma fronteira clara entre operador e cliente.
 
-- carregar `CLAUDE.md`;
-- carregar `AGENTS.md`;
-- carregar agents especializados;
-- executar hooks como `session_start`;
-- usar commands;
-- consultar memória persistente;
-- operar sobre GitHub/Kanban;
-- executar pipelines de construção e execução;
-- conversar livremente com o usuário;
-- acionar subagentes e tools.
-
-Porém, esse modelo não é adequado para distribuição comercial porque:
-
-1. A UI do Claude Code é fechada.
-   - Não permite adaptação.
-   - Não permite remover painéis ou restringir superfícies.
-   - Não permite criar uma experiência controlada para cliente.
-
-2. O runtime pressupõe acesso completo ao workspace.
-   - O usuário pode ver arquivos internos.
-   - O usuário pode copiar arquivos de sistema.
-   - O usuário pode modificar regras do sistema.
-   - O sistema não tem fronteira clara entre operador e cliente.
-
-3. O produto não deve ser entregue como executável, template ou repositório.
-   - O valor está na arquitetura, nos agentes, nas regras, nos workflows e na governança.
-   - A forma correta de distribuição é serviço web/SaaS controlado.
-   - O cliente não deve receber os `.mds` privados nem o sistema base.
+Por fim, o produto não deve ser entregue como executável, template ou repositório. O valor está na arquitetura, nos agentes, nas regras, nos workflows e na governança. A forma correta de distribuição é um serviço web/SaaS controlado, em que o cliente não recebe os `.mds` privados nem o sistema base.
 
 Objetivo desta epic:
 
@@ -61,11 +39,32 @@ Objetivo desta epic:
 
 ## Tese de produto
 
-O produto não é apenas um template.
+O produto não é apenas um template. Ele é uma fábrica/sistema operacional multi-agente para criar, evoluir e operar produtos digitais com governança, memória, Kanban, gates e rastreabilidade.
 
-O produto é:
+Em termos de mercado, o produto deve ser entendido como uma plataforma gerenciada que productiza a função de uma consultoria/COE de produto, engenharia e gestão, operando diretamente no GitHub do cliente.
 
-> uma fábrica/sistema operacional multi-agente para criar, evoluir e operar produtos digitais com governança, memória, Kanban, gates e rastreabilidade.
+Não é apenas uma ferramenta de chat, nem apenas uma UI para Claude Code/Codex, nem apenas um framework de agentes. O ativo central é a metodologia operacional codificada nos `.mds`, agents, commands, hooks, gates, policies, templates e workflows. O cliente não compra horas, não recebe um template e não instala o sistema: compra acesso contínuo a uma capacidade operacional para criar, organizar, construir, revisar, operar, auditar e evoluir produtos digitais com um sistema de agentes governado.
+
+### Categoria comercial
+
+A categoria mais precisa para o beta é:
+
+> Service-as-a-Product entregue como Product-as-a-Service / plataforma gerenciada.
+
+`Service-as-a-Product` significa que uma função normalmente consultiva, artesanal e dependente de especialistas foi transformada em uma oferta padronizada, repetível e vendável como produto.
+
+No caso do Dual Multi-Agent System, a função productizada é parecida com a de uma consultoria, COE interno ou time autossuficiente de produto/engenharia: entender contexto, estruturar discovery, criar projeto e backlog, organizar Kanban, priorizar, executar desenvolvimento, gerar issues, PRs e commits, aplicar gates, operar rotinas, registrar decisões e transformar falhas em trabalho rastreável.
+
+`Product-as-a-Service` significa que o cliente acessa a capacidade do produto como serviço contínuo, sem possuir o sistema, sem receber os `.mds` privados, sem acessar o runtime e sem controlar a infraestrutura.
+
+O termo `SaaS` pode ser usado como forma de entrega, desde que com precisão: o beta não é um SaaS self-service genérico, mas uma plataforma gerenciada/hosted managed platform, com onboarding, configuração, ponto focal treinado do cliente, login/permissões e sistema hospedado, privado e operado pela infraestrutura própria.
+
+!!! note
+    A categoria de negócio é Service-as-a-Product. A forma de entrega é plataforma gerenciada. A função automatizada é parecida com consultoria/COE, mas o ativo vendido não é hora: é capacidade operacional contínua.
+
+Formulação curta:
+
+> Não vendemos horas. Não entregamos template. Não entregamos repo. Vendemos uma capacidade operacional contínua: delivery de produto com método, agentes, governança e rastreabilidade.
 
 Ele pode atender dois tipos de produto digital.
 
@@ -111,43 +110,36 @@ O padrão observado no mercado é:
 1. Desenvolvedores usam Claude Code, Cursor, Copilot e ferramentas similares para resolver tarefas técnicas em formato livre.
 2. Usuários de negócio usam chats e agentes para resolver demandas pontuais, normalmente sem processo estruturado.
 3. Frameworks como CrewAI, LangGraph, AutoGen, Dify, Flowise e Langflow oferecem blocos para construir sistemas agentic, mas exigem muito esforço de engenharia para entregar workflows completos, governados e auditáveis.
-4. Runtimes como OpenClaw oferecem infraestrutura agentic, mas não entregam uma metodologia de produto, gestão, Kanban, gates, papéis, commands e operação ponta a ponta pronta para adaptar a clientes.
+4. Runtimes agentic oferecem infraestrutura, mas não entregam uma metodologia de produto, gestão, Kanban, gates, papéis, commands e operação ponta a ponta pronta para adaptar a clientes.
 
-O diferencial do Dual Multi-Agent System é tratar agentes não como assistentes soltos, mas como uma organização operacional codificada.
-
-A arquitetura incorpora:
-
-- papéis organizacionais claros;
-- cadeia de comando;
-- PM, PO, TL, QA e especialistas;
-- Kanban como fonte de verdade;
-- issues como memória e canal entre agentes;
-- PRs e commits como trilha técnica;
-- gates de aprovação;
-- feedback loop execução -> construção;
-- adaptação por domínio e cliente;
-- operação sobre GitHub do cliente;
-- isolamento da metodologia privada.
+O diferencial do Dual Multi-Agent System é tratar agentes não como assistentes soltos, mas como uma organização operacional codificada. A arquitetura combina papéis claros, cadeia de comando, PM, PO, TL, QA e especialistas; usa o Kanban como fonte de verdade, issues como memória e canal entre agentes, PRs e commits como trilha técnica; preserva gates de aprovação, feedback loop execução -> construção, adaptação por domínio/cliente, operação sobre o GitHub do cliente e isolamento da metodologia privada.
 
 O risco competitivo existe: outras empresas ou desenvolvedores podem construir partes semelhantes. Porém, a maioria dos usos atuais de IA permanece em dois extremos:
 
 - uso individual, livre e pouco governado;
 - frameworks técnicos que exigem montar toda a governança do zero.
 
+Além disso, a alternativa real em muitas empresas não é apenas "comprar uma ferramenta de IA". Frequentemente a decisão está entre contratar uma consultoria tradicional, montar um COE interno, formar um time de produto/engenharia dedicado, entregar Claude Code/Codex solto para profissionais internos ou contratar automações pontuais sem governança de delivery.
+
+O beta deve se posicionar entre esses mundos:
+
+```text
+consultoria/COE
+  +
+produto hospedado
+  +
+agentes de IA governados
+  +
+GitHub como trilha operacional
+```
+
+A experiência esperada não é de um usuário avulso conversando com um chatbot genérico. A experiência esperada é de um ponto focal treinado do cliente interagindo com uma unidade de entrega digital governada, como faria com uma consultoria ou COE, mas com parte relevante da operação encapsulada em software.
+
 Este produto ocupa uma camada diferente:
 
 > um sistema operacional agentic governado para construir, operar e evoluir produtos digitais.
 
-O defensivo inicial não é segredo absoluto dos arquivos `.md`, mas sim:
-
-- velocidade de execução;
-- metodologia acumulada;
-- qualidade da adaptação por cliente;
-- biblioteca crescente de agents/commands/templates;
-- casos reais;
-- histórico operacional;
-- SaaS privado com isolamento;
-- evolução contínua do sistema base.
+O defensivo inicial não é o segredo absoluto dos arquivos `.md`, mas a combinação entre velocidade de execução, metodologia acumulada, qualidade da adaptação por cliente, biblioteca crescente de agents/commands/templates, casos reais, histórico operacional, SaaS privado com isolamento e evolução contínua do sistema base.
 
 A estratégia do beta deve priorizar validação em clientes reais para transformar a vantagem metodológica em prova de mercado.
 
@@ -159,20 +151,7 @@ O template pai `claude-code-enterprise-template` é uma fábrica de projetos.
 
 Ele cria projetos filhos com:
 
-- 13 agentes especializados:
-  - `project-manager`;
-  - `tech-lead`;
-  - `product-owner`;
-  - `data-engineer`;
-  - `data-scientist`;
-  - `ml-engineer`;
-  - `ai-engineer`;
-  - `infra-devops`;
-  - `qa`;
-  - `researcher`;
-  - `security-auditor`;
-  - `frontend-engineer`;
-  - `marketing-strategist`;
+- agentes especializados para coordenação, produto, engenharia, dados, IA, infraestrutura, QA, segurança, pesquisa e go-to-market;
 - `CLAUDE.md` e `AGENTS.md` gerados para o projeto filho;
 - commands como `/kickoff`, `/advance`, `/review-backlog`, `/review`, `/deploy`, `/fix-issue`, `/clean`, `/update-memory`;
 - GitHub Project/Kanban criado por workflow;
@@ -226,7 +205,7 @@ Criar uma versão beta comercial do Dual Multi-Agent System baseada em:
 - Claude Code como executor inicial preferencial, se mantiver maior qualidade e menor risco;
 - Codex como executor alternativo/pluggable;
 - Aider como executor alternativo especializado para edição de código, se fizer sentido;
-- OpenClaw como candidato futuro ou executor opcional, caso traga ganho real de runtime contínuo;
+- runtime alternativo futuro apenas se trouxer ganho real sobre o executor atual;
 - UI web controlada, adaptada a partir de base open-source ou construída como superfície enxuta;
 - Monitor/Dashboard reaproveitado parcialmente para observabilidade;
 - API própria como camada intermediária obrigatória;
@@ -244,41 +223,28 @@ Criar uma versão beta comercial do Dual Multi-Agent System baseada em:
 Cliente
   ↓
 UI Web controlada
-  - chat/comandos
-  - status/eventos públicos
-  - diff/PR/preview do project/
-  - board espelhado do GitHub Projects
-  - componentes parciais de monitor
   ↓
 API própria
-  - /chat
-  - /command
-  - /status
-  - /events
-  - /metrics
-  - /history
-  - /project/changes
-  - /project/artifacts
   ↓
 job runner privado
   ↓
 executor agentic interno
-  - Claude Code inicialmente
-  - Codex opcional
-  - Aider opcional para edição de código
-  - OpenClaw opcional/futuro
   ↓
-system repo privado + project repo cliente
+system/ privado + platform/ privada + project/ do cliente
   ↓
 GitHub do cliente
-  - issues
-  - PRs
-  - commits
-  - Kanban
-  - código
-  - documentação
-  - artefatos
 ```
+
+A UI expõe apenas a superfície permitida: chat/comandos, status/eventos públicos, diff/PR/preview do `project/`, board espelhado do GitHub Projects e componentes parciais de monitor.
+
+A API própria concentra os endpoints públicos do beta: `/chat`, `/command`, `/status`, `/events`, `/metrics`, `/history`, `/project/changes` e `/project/artifacts`.
+
+O executor agentic interno deve começar pelo caminho que já funciona melhor, hoje Claude Code, mantendo Codex/Aider como alternativas ou complementos. O desenho deve evitar dependência irreversível de qualquer executor específico.
+
+O GitHub do cliente concentra issues, PRs, commits, Kanban, código, documentação e artefatos.
+
+!!! note
+    Arquitetura alvo descreve camadas. A seção de encapsulamento do executor, mais adiante, descreve a transição do estado atual para esse estado alvo. Elas se complementam: uma mostra a forma final; a outra mostra como sair do uso local sem perder comportamento.
 
 ---
 
@@ -612,7 +578,7 @@ O que pode ser usado no beta é:
 
 ### Avaliação local consolidada dos repositórios inspecionados
 
-Repositórios locais analisados em `C:\temp`:
+Repositórios analisados localmente:
 
 - `aider`;
 - `claudecodeui`;
@@ -652,13 +618,13 @@ Também permanecem na avaliação os candidatos já mapeados:
 | Vibe Kanban | Apache 2.0 | Kanban, workspaces, branch por tarefa, terminal, dev server, diff, comentários inline, preview/browser, PRs e múltiplos agentes. | É a base mais pragmática para tarefa -> workspace -> agente -> diff -> PR. Combina bem com o modo como o sistema já opera por issue/PR. | O board próprio/local não deve virar source of truth; precisa espelhar GitHub Projects/issues. Terminal/file access precisam passar por API e allowlist. O projeto também está em sunset, então o fork precisa ser tratado como base congelada. | Melhor base pragmática para o beta, desde que GitHub Projects continue mandando e o Vibe vire UI/espelho operacional. |
 | Nimbalyst | MIT por padrão; `packages/collabv3` é AGPL-3.0 ou licença comercial separada | Workspace visual para Codex/Claude Code, sessões paralelas, kanban, tarefas, editores visuais, markdown, mockups, Mermaid, Excalidraw, CSV, data models, Monaco, worktrees, mobile e permissões por projeto. | É o candidato mais forte conceitualmente para "fábrica de produtos digitais", porque não pensa só em código; pensa em artefatos, sessões, tarefas e edição visual. | Monorepo grande, Electron, runtime próprio, partes colaborativas com licença separada e maior custo de adaptação. Pode ser pesado para beta de 30 dias. | Melhor referência estratégica e possível base se houver tempo para investigação profunda; talvez superior ao Vibe no longo prazo. |
 | OpenCovibe | Apache 2.0 | Chat visual, tool cards, run history/replay, fork/resume, permissões inline, usage/cost, activity monitor, MCP, memory editor, agent editor, marketplace e file explorer. | Melhor referência para a UX de "ver o agente trabalhando": tool cards, eventos, histórico e monitor. | Expõe exatamente o que precisa ser escondido: memory, agents, settings, MCP, file explorer amplo e detalhes de tool calls. Capar no frontend não basta; precisa API própria e backend sanitizado. | Excelente fonte de componentes de execução/monitor; perigoso como base direta sem reescrever fronteira de backend. |
-| ClaudeCodeUI / CloudCLI UI | AGPL-3.0-or-later | Web/mobile UI para Claude Code, Cursor CLI, Codex e Gemini CLI; shell terminal, file explorer, git explorer, sessões, plugins, REST API, sandbox experimental. | Acelera uma UI web remota para Claude/Codex com chat, arquivos, git e sessões. É próximo do que se imagina como "Claude Code em browser". | É genérico e muito exposto: terminal, file explorer, git, plugins e config nativa `~/.claude`. A licença AGPL pesa se for base de SaaS fechado. Reforça que UI genérica está comoditizada. | Bom candidato técnico para acelerar web UI, mas exige corte forte e decisão jurídica. Não é o diferencial do produto. |
+| ClaudeCodeUI / CloudCLI UI | AGPL-3.0-or-later | Web/mobile UI para Claude Code, Cursor CLI, Codex e Gemini CLI; shell terminal, file explorer, git explorer, sessões, plugins, REST API, sandbox experimental. | Acelera uma UI web remota para Claude/Codex com chat, arquivos, git e sessões. É próximo do que se imagina como "Claude Code em browser". | É genérico e muito exposto: terminal, file explorer, git, plugins e configuração nativa do executor. A licença AGPL pesa se for base de SaaS fechado. Reforça que UI genérica está comoditizada. | Bom candidato técnico para acelerar web UI, mas exige corte forte e decisão jurídica. Não é o diferencial do produto. |
 | Cline | Apache 2.0 | Extensão VSCode com agente, edição de arquivos, terminal, browser, checkpoints, diffs, MCP, múltiplos provedores e human-in-the-loop. | Referência muito forte de permissões, checkpoints, browser testing, diff e aprovação humana. | É IDE/VSCode-first, não SaaS web controlado. Não resolve isolamento `system/project` sem construir plataforma em volta. | Referência obrigatória de UX, permissões e auditoria; não é base principal para o beta web. |
 | OpenADE | MIT | Cockpit dev com Plan -> Revise -> Execute, HyperPlan, comentários em arquivos/diffs/mensagens, terminal, file browser, process manager, snapshots e worktrees. | Bom para fluxo de planejamento/revisão/execução e cockpit técnico. | Muito orientado a operador dev; expõe terminal, files, processos e worktrees. Menos natural para cliente B2B não técnico. | Boa referência de cockpit e planejamento; segunda linha como base. |
-| Yume / `yume-inspect` | Freeware/proprietário; licença permite uso, mas proíbe modificar, distribuir, fazer engenharia reversa e criar derivados | UI nativa para Claude Code oficial como subprocesso; orchestration flow, agentes built-in, background agents, worktree isolation, plugins/skills, rate limit, crash recovery, multi-provider e painéis. | Excelente benchmark de UX Claude Code-native. Confirma que spawnar o Claude Code oficial e preservar hooks/skills/MCP é uma abordagem real. | O repo local é site/releases; código-fonte real não está disponível. A licença declara closed source e proíbe derivados. `C:\temp\yume` ficou incompleto; `C:\temp\yume-inspect` mostra a distribuição/site. | Não usar como base. Usar como benchmark competitivo e inspiração de UX. |
+| Yume / `yume-inspect` | Freeware/proprietário; licença permite uso, mas proíbe modificar, distribuir, fazer engenharia reversa e criar derivados | UI nativa para Claude Code oficial como subprocesso; orchestration flow, agentes built-in, background agents, worktree isolation, plugins/skills, rate limit, crash recovery, multi-provider e painéis. | Excelente benchmark de UX Claude Code-native. Confirma que spawnar o Claude Code oficial e preservar hooks/skills/MCP é uma abordagem real. | O repo local é site/releases; código-fonte real não está disponível. A licença declara closed source e proíbe derivados. O clone `yume` ficou incompleto; `yume-inspect` mostra a distribuição/site. | Não usar como base. Usar como benchmark competitivo e inspiração de UX. |
 | Aider | Apache 2.0 | CLI madura de pair programming, repo map, git integration, lint/test loop, multi-modelo, voz e grande adoção. | Pode ser runner alternativo para tarefas de código, especialmente edição cirúrgica, testes e commits. | Não é UI, não é sistema operacional de projeto, não preserva sozinho PM/PO/TL/Kanban/gates. | Bom runner alternativo futuro; não é base de produto. |
 | Happy | MIT | Web/mobile client para Claude Code e Codex com wrapper CLI, E2E encryption, push notifications, troca entre devices, Happy Agent e Happy Server. | Inspira mobile, notificações, controle remoto e continuidade de sessão. | Foco é controle remoto pessoal, não governança B2B com GitHub Projects, PRs, gates e isolamento de `system/`. | Referência útil para mobile/remote control; não é base principal. |
-| Opcode | AGPL-3.0 | Tauri desktop para Claude Code: projetos/sessões, custom agents, background execution, usage analytics, MCP, timeline/checkpoints e editor de `CLAUDE.md`. | Boa referência de dashboard de operador, agentes, analytics e checkpoints. | Muito voltado a mexer no universo interno do Claude Code: agentes, MCP, `CLAUDE.md`, configs. Para cliente, expõe demais. Licença AGPL pesa. | Referência de operador/admin, não UI cliente. |
+| Opcode | AGPL-3.0 | Tauri desktop para Claude Code: projetos/sessões, custom agents, background execution, usage analytics, MCP, timeline/checkpoints e editor de instruções. | Boa referência de dashboard de operador, agentes, analytics e checkpoints. | Muito voltado a mexer no universo interno do Claude Code: agentes, MCP, instruções e configs. Para cliente, expõe demais. Licença AGPL pesa. | Referência de operador/admin, não UI cliente. |
 | Fazm | README indica MIT; não havia `LICENSE` na raiz local | Agente de computador macOS, browser, docs, Google Apps, voz, ACP bridge, rotinas via launchd, cron jobs e histórico em SQLite. | Inspira plano de execução, rotinas recorrentes, voice UX e automação de desktop/browser. | É macOS/computer-agent, não UI de projeto GitHub/Kanban. Pouca aderência ao isolamento SaaS proposto. | Lateral. Útil como referência de rotinas e agent-as-product, não base da UI. |
 | OpenClaw + WebChat + Monitor/Control UI | MIT | Runtime/control plane, Gateway, WebChat, monitor/dashboard, sessões, cron, eventos e agentes. | Pode ser valioso se a decisão for adotar OpenClaw como runtime estruturado. | Exige migrar/reescrever o que já funciona no Claude Code; WebChat/Monitor não podem conectar direto ao Gateway no navegador do cliente. | Manter como opção futura de runtime; não escolher apenas pela UI. |
 | UI própria simples + Claude Code executor | Código próprio; termos Claude Code a verificar | Chat, comandos, status, history, eventos, diff e monitor mínimo criados sob medida. | Menor superfície e isolamento mais limpo; preserva executor que já foi validado. | Exige construir UI, diff, stream e monitor, mesmo que enxutos. | Melhor fallback se adaptar bases existentes ficar mais caro que criar a superfície mínima. |
@@ -748,7 +714,7 @@ Ranking considerando: aderência ao template, velocidade de beta, capacidade de 
 1. Claude Code, porque o sistema atual já foi validado nele.
 2. Codex, como executor alternativo/pluggable.
 3. Aider, como runner especializado para edição de código.
-4. OpenClaw, se no futuro o ganho de runtime/orquestração superar o custo de migração.
+4. Runtime alternativo futuro, apenas se o ganho de orquestração superar o custo de troca.
 
 ### Decisão operacional
 
@@ -756,44 +722,15 @@ Para o beta, a melhor direção é:
 
 > Vibe Kanban ou Nimbalyst como base visual principal, OpenCovibe/Cline/Yume como referências de execution trace e permissões, API própria como fronteira obrigatória, Claude Code como executor interno inicial e GitHub Projects/issues/PRs como source of truth.
 
-Arquitetura recomendada:
+Essa decisão usa a arquitetura alvo definida anteriormente: UI controlada, API própria, policy/sanitizer, allowlist de `project/`, bloqueio de `system/` e `platform/`, runner privado e GitHub do cliente como trilha operacional.
 
-```text
-Cliente
-  ↓
-UI web controlada
-  - chat/comandos
-  - status/eventos públicos
-  - diff/PR/preview do project/
-  - board espelhado do GitHub Projects
-  ↓
-API própria
-  - auth
-  - policy
-  - sanitizer
-  - allowlist project/
-  - bloqueio system/ e platform/
-  ↓
-job runner privado
-  ↓
-executor agentic interno
-  - Claude Code inicialmente
-  - Codex como alternativa
-  - Aider para edição de código, se útil
-  - OpenClaw como opção futura
-  ↓
-system repo privado + project repo cliente
-  ↓
-GitHub do cliente
-```
-
-OpenClaw não deve ser removido da tese técnica, mas também não deve ser dependência obrigatória do beta se Claude Code já entrega melhor qualidade e menor risco.
+Runtimes alternativos não devem ser removidos da tese técnica, mas também não devem ser dependência obrigatória do beta se Claude Code já entrega melhor qualidade e menor risco.
 
 Vibe Kanban deve continuar como o caminho mais rápido se o objetivo for beta vendável em até 30 dias. Nimbalyst deve ser investigado em paralelo como candidato mais ambicioso para a plataforma definitiva. OpenCovibe deve ser tratado como biblioteca de ideias de UX, não como fonte de verdade operacional.
 
 ---
 
-## Migração/encapsulamento do executor agentic
+## Encapsulamento do executor agentic
 
 ### Estado atual
 
@@ -835,30 +772,14 @@ O executor agentic passa a ser:
 
 ### Estratégia de encapsulamento
 
-O beta não precisa migrar obrigatoriamente para OpenClaw se Claude Code/Codex já executarem bem o sistema atual.
+O beta não precisa migrar para outro runtime se Claude Code já executa bem o sistema atual. O problema principal não é qualidade de execução: é isolamento, UI controlada, fronteira entre `system/`, `platform/` e `project/`, sanitização e acesso seguro do cliente.
 
-A prioridade é encapsular o comportamento que já funciona em um runtime privado controlado por API.
+A prioridade é encapsular o comportamento que já funciona em um executor interno controlado por API. Qualquer runtime alternativo só deve entrar se trouxer ganho real, sem enfraquecer a arquitetura dual.
 
-Se OpenClaw for usado, a migração deve ser completa o suficiente para preservar a arquitetura dual.
+!!! note
+    Decisão do beta: preservar Claude Code como executor interno inicial e resolver isolamento por arquitetura de produto. Trocar o executor não é objetivo em si.
 
-Mapeamento esperado:
-
-```text
-Claude Code                 Runtime privado / OpenClaw opcional / SaaS beta
--------------------------------------------------------------
-CLAUDE.md                   SOUL.md + AGENTS.md + policies
-AGENTS.md                   AGENTS.md adaptado
-.claude/agents/*.md         agents/*.md
-commands/*.md               skills/commands ou command adapter
-.claude/memory/*.md         memory privada + GitHub cliente
-settings.json               runtime policies + backend policy
-hooks/session_start         gateway hook ou backend lifecycle
-hooks/post_write            backend/runtime event hooks
-Task/subagents              OpenClaw agents / orchestration adapter
-Cron/GitHub Actions         OpenClaw cron + backend scheduler
-```
-
-O objetivo não é apenas traduzir arquivos, mas preservar comportamento:
+O contrato que precisa ser preservado é comportamental:
 
 - PM/PO/TL continuam existindo como papéis operacionais;
 - `/kickoff` e `/advance` continuam sendo fluxos centrais;
@@ -875,7 +796,7 @@ Para reduzir risco, a decisão recomendada para o beta é:
 - manter Claude Code como executor interno inicial, se continuar sendo o caminho de maior qualidade;
 - permitir Codex como executor alternativo;
 - permitir Aider como executor especializado para código, se útil;
-- desenhar o job runner para aceitar OpenClaw futuramente;
+- desenhar o job runner para aceitar runtime alternativo futuramente, sem acoplamento desnecessário;
 - não expor nenhum executor diretamente ao cliente;
 - tratar todos os executores como implementação interna atrás da API própria.
 
@@ -887,7 +808,7 @@ Para reduzir risco, a decisão recomendada para o beta é:
 
 Usar uma UI web controlada baseada em Vibe Kanban, Nimbalyst ou outra base equivalente, com componentes de execution trace inspirados em OpenCovibe/Cline/Yume.
 
-OpenClaw WebChat pode continuar como referência, mas não deve ser premissa obrigatória do beta.
+WebChats de runtimes agentic podem continuar como referência, mas não devem ser premissa obrigatória do beta.
 
 ### Motivo
 
@@ -909,7 +830,7 @@ A UI principal precisa suportar:
 
 Remover ou substituir:
 
-- conexão direta com Gateway/OpenClaw;
+- conexão direta com Gateway/runtime interno;
 - WebSocket direto do navegador para o runtime;
 - autodiscovery de agentes;
 - exposição de sessões internas;
@@ -1229,7 +1150,7 @@ A UI não pode:
 - acessar settings;
 - acessar memória raw;
 - acessar logs internos;
-- acessar Gateway/OpenClaw diretamente;
+- acessar Gateway/runtime interno diretamente;
 - acessar shell direto;
 - acessar file explorer amplo.
 
@@ -1397,7 +1318,7 @@ Criar camada de sanitização para tudo que sai para:
 ### Exemplo ruim
 
 ```text
-O tech-lead-agent rejeitou o PR conforme a regra definida no CLAUDE.md.
+O PR foi rejeitado conforme regra definida no CLAUDE.md.
 ```
 
 ### Exemplo correto
@@ -1549,7 +1470,7 @@ VM única
   │   ├── Claude Code inicial/preferencial
   │   ├── Codex opcional
   │   ├── Aider opcional
-  │   └── OpenClaw opcional/futuro
+  │   └── runtime alternativo opcional/futuro
   ├── system/
   │   └── clone sincronizado do repo privado do sistema
   ├── platform/
@@ -1640,7 +1561,7 @@ Cliente não acessa:
 
 - SSH;
 - executor interno direto;
-- OpenClaw direto, se existir;
+- runtime alternativo direto, se existir;
 - Gateway direto, se existir;
 - filesystem;
 - repo interno do sistema;
@@ -1668,7 +1589,7 @@ Não implementar RBAC avançado nesta fase.
 
 ### Obrigatório
 
-- runtime/Gateway/OpenClaw não exposto publicamente;
+- runtime/Gateway/executor não exposto publicamente;
 - apenas API própria exposta;
 - arquivos de sistema fora do root público;
 - arquivos de plataforma fora do workspace do agente cliente;
@@ -1697,14 +1618,14 @@ Possibilidades futuras:
 
 - OpenAI/Codex;
 - Aider com modelos compatíveis;
-- OpenClaw com provedores plugáveis;
+- runtime alternativo com provedores plugáveis;
 - outros modelos compatíveis.
 
 Regras:
 
-- API key pertence à infraestrutura;
-- cliente não insere key própria no beta;
-- custo pode ser repassado depois por uso/token;
+- preferir BYOK (`bring your own key`) quando os termos do provedor permitirem uso hospedado/B2B;
+- se a chave for da infraestrutura, custo deve ser embutido no preço ou repassado de forma transparente;
+- custo de tokens deve ser separado do valor da metodologia/plataforma;
 - logs de custo devem ser agregados e sanitizados;
 - termos de Claude Code, Codex, Anthropic, OpenAI e demais provedores devem ser avaliados separadamente para uso B2B hospedado.
 
@@ -1712,9 +1633,82 @@ Regras:
 
 ## Modelo comercial beta
 
+### Definição
+
 O produto será oferecido como:
 
-> acesso a um sistema web hospedado na infraestrutura própria, operando sobre o GitHub do cliente.
+> acesso a uma plataforma gerenciada hospedada na infraestrutura própria, operando sobre o GitHub do cliente e encapsulando uma metodologia privada de delivery com agentes.
+
+A definição comercial consolidada é:
+
+> Service-as-a-Product entregue como Product-as-a-Service.
+
+Isso significa que o serviço consultivo/COE foi productizado em método, agents, commands, hooks, gates, policies, templates e workflows. O produto não é transferido ao cliente: ele consome a capacidade como serviço contínuo, enquanto a inteligência operacional permanece privada e o GitHub do cliente continua sendo a superfície operacional visível.
+
+### Camadas da oferta
+
+```text
+Ativo proprietário
+  .mds, agentes, comandos, hooks, gates, policies, templates, workflows e método.
+
+Produto
+  sistema dual multi-agente que cria, evolui e opera produtos digitais.
+
+Entrega
+  plataforma web hospedada, com UI, API, runner, sanitizer, monitor e integração GitHub.
+
+Modelo comercial
+  setup/onboarding + mensalidade + eventual repasse/uso separado de tokens.
+```
+
+### Natureza da venda
+
+O produto não deve ser vendido como consultoria tradicional. Ele deve ser vendido como uma plataforma gerenciada que automatiza parte da função de uma consultoria/COE de produto e engenharia.
+
+A consultoria é o DNA metodológico. O produto é o ativo. A plataforma gerenciada é a forma de entrega. O cliente deve perceber que está comprando uma capacidade operacional contínua, não horas avulsas: criar projeto, organizar backlog, operar Kanban/GitHub, gerar issues e PRs, revisar entregas, aplicar gates, executar rotinas, registrar decisões, transformar falhas em issues, gerar artefatos e manter rastreabilidade.
+
+### Operação com ponto focal
+
+No beta, o uso deve pressupor um ponto focal treinado do cliente.
+
+Esse papel é equivalente ao ponto focal que uma empresa teria ao contratar uma consultoria ou ao operar um COE interno:
+
+```text
+Ponto focal do cliente
+  ↓
+Interface web
+  ↓
+Sistema dual multiagente
+  ↓
+GitHub do cliente
+  ↓
+issues, PRs, backlog, rotinas, artefatos, decisões
+```
+
+- conversa com o sistema;
+- aprova caminhos;
+- dispara comandos;
+- acompanha status;
+- revisa diffs e PRs;
+- valida outputs;
+- responde dúvidas de produto/domínio;
+- decide prioridades quando necessário.
+
+O produto não precisa ser self-service irrestrito para todos os funcionários no beta. Ele pode ser high-touch, com onboarding, governança e operador/ponto focal definido.
+
+### Cobrança
+
+Modelo recomendado para beta:
+
+- taxa de setup/onboarding para configuração inicial;
+- mensalidade pelo acesso à plataforma gerenciada;
+- infraestrutura básica incluída na mensalidade;
+- custo fixo de VM previsível incluído no preço;
+- tokens LLM pagos pelo cliente via chave própria, quando possível;
+- alternativamente, tokens podem ser repassados por consumo em fase posterior;
+- customizações profundas cobradas à parte.
+
+O uso de chave própria do cliente para Claude Code/LLM deve ser tratado como modelo BYOK (`bring your own key`). Isso não descaracteriza a oferta como produto/plataforma gerenciada, porque o valor vendido não é a chave do modelo: é a metodologia, a orquestração, a UI controlada, o isolamento, a execução governada, a integração GitHub, a rastreabilidade, o monitoramento, a adaptação por cliente e a evolução contínua.
 
 Não será oferecido como:
 
@@ -1733,6 +1727,7 @@ O cliente compra:
 - execução governada;
 - rastreabilidade;
 - outputs;
+- uma capacidade operacional de delivery de produto.
 - evolução contínua.
 
 O cliente não compra:
@@ -1743,6 +1738,29 @@ O cliente não compra:
 - os templates privados;
 - o código da plataforma;
 - o runtime/control plane.
+
+### Formulação comercial curta
+
+> Em vez de vender horas de consultoria ou entregar um template, vendemos acesso a um sistema hospedado que executa um método proprietário de entrega de produtos digitais, operando no GitHub do cliente com backlog, PRs, issues, rotinas, gates e rastreabilidade.
+
+### Posicionamento recomendado
+
+Usar em conversas comerciais:
+
+> Plataforma gerenciada de delivery de produtos digitais com agentes de IA.
+
+Usar em explicações estratégicas:
+
+> Service-as-a-Product entregue como Product-as-a-Service.
+
+Evitar como categoria principal:
+
+- consultoria pura;
+- SaaS self-service genérico;
+- template;
+- framework de agentes;
+- UI para Claude Code;
+- automação pontual.
 
 ---
 
@@ -1806,7 +1824,7 @@ Não implementar agora:
 
 - cliente acessar arquivos de sistema;
 - cliente acessar arquivos de plataforma;
-- cliente acessar Gateway/OpenClaw diretamente;
+- cliente acessar Gateway/runtime/executor diretamente;
 - cliente listar agents;
 - cliente ver prompts;
 - cliente ver memória raw;
@@ -1832,7 +1850,7 @@ Não implementar agora:
 - cliente não vê arquivos de plataforma;
 - cliente não vê agents internos;
 - cliente não vê memória raw;
-- cliente não acessa Gateway/OpenClaw/executor diretamente.
+- cliente não acessa Gateway/runtime/executor diretamente.
 
 ### Runtime
 
@@ -1952,4 +1970,16 @@ O cliente recebe acesso a:
 A inteligência permanece privada.
 
 O GitHub do cliente permanece como espaço operacional do projeto/produto.
+
+Comercialmente, o beta deve ser apresentado como:
+
+> uma plataforma gerenciada de delivery de produtos digitais com agentes de IA.
+
+Conceitualmente, o modelo é:
+
+> Service-as-a-Product entregue como Product-as-a-Service.
+
+Ou seja:
+
+> uma função consultiva/COE de produto, engenharia e gestão productizada em software, hospedada como sistema privado, operada por um ponto focal treinado do cliente e registrada no GitHub dele com governança, gates e rastreabilidade.
 
