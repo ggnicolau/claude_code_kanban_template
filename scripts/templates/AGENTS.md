@@ -125,12 +125,16 @@ Regra central: **artefatos que saem da organização passam obrigatoriamente pel
 ## Arquitetura Dual Multi-Agent System
 
 Este framework opera em dois mundos:
-- **Mundo 1 — Sistema/Backoffice (raiz):** `.claude/`, `CLAUDE.md`, `AGENTS.md`, `pyproject.toml`, `docs/`, `data/`, `scripts/`, `src/`, `tests/`. Estrutura rígida herdada do enterprise-template. Commits com escopo `(system)`.
-- **Mundo 2 — Produtos (`products/<produto>/`):** estrutura livre por produto (cada produto define a própria forma). Commits sem escopo ou com escopo do produto.
+- **Mundo 1 — Sistema agentic (raiz):** infraestrutura do framework — `.claude/`, `CLAUDE.md`, `AGENTS.md`, `pyproject.toml`, `docs/` (do sistema), hooks, geradores universais, CI. Estrutura rígida herdada do enterprise-template. Commits com escopo `(system)`.
+- **Mundo 2 — Produtos (`products/<produto>/`):** estrutura livre por produto. Inclui **código** (scripts/src/tests do produto), não só documentos. Commits sem escopo ou com escopo do produto.
 
 Os 13 agentes alternam entre os dois mundos. Em Mundo 1 valem as regras de sistema (versionamento documental, estrutura por agente em `docs/`, frontmatter YAML obrigatório). Em Mundo 2 a forma é definida pelo produto.
 
-**Regra de desempate (critério do leitor primário):** quando estiver em dúvida sobre qual mundo, pergunte *quem lê esse documento de forma recorrente?* Se é o operador/consumidor de um produto específico, vai para `products/<produto>/`. Se é o time que mantém o sistema agentic, vai para `docs/<bucket>/<agente>/`. **Quem escreve não define onde mora; quem lê define.** Casos típicos que costumam ser mal alocados: runbook de pipeline de produto, spec operacional de produto, decisão técnica tomada para atender requisito de produto, plano de teste E2E de produto — todos vão em `products/`, não em `docs/<bucket>/<agente>/`. Detalhes e exemplos em `CLAUDE.md` §"Regra de fronteira".
+**Atenção — `scripts/`, `src/`, `tests/` na raiz NÃO são genéricos.** Só recebem código do framework agentic (CI, hooks, libs universais reutilizáveis por múltiplos produtos). Código que existe **por causa de um produto específico** vai em `products/<produto>/scripts/` ou `products/<produto>/src/` — mesmo que apenas um produto exista hoje. A pasta `products/` recebe não só docs e briefings, mas também todo o código do produto.
+
+**Regra de desempate (critério do leitor primário):** vale para **qualquer arquivo** do repo — `.md`, `.py`, `.sh`, `.yaml`, módulo, script, teste, dado. Pergunte *quem lê/consome esse arquivo de forma recorrente?* Se é o operador/consumidor de um produto específico (ou código que serve apenas àquele produto), vai para `products/<produto>/`. Se é o time que mantém o sistema agentic (ou código universal reutilizável por qualquer produto), vai para Mundo 1. **Quem escreve não define onde mora; quem lê/consome define.** Teste prático para código: se você deletasse o produto X amanhã, o arquivo continuaria fazendo sentido? Sim → sistema. Não → produto.
+
+**Subníveis dentro de produto:** comece no nível mais específico (pasta da rotina) e promova quando aparecer segundo consumidor (raiz do produto compartilha entre rotinas). Detalhes e exemplos em `CLAUDE.md` §"Regra de fronteira" e §"Subníveis dentro de produto".
 
 ## Estrutura de `docs/` por agente
 

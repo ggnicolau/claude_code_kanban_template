@@ -148,44 +148,64 @@ O PR chega mais bem especificado — a colaboração acontece antes de implement
 
 Este projeto adota o padrão **Dual Multi-Agent System** — dois mundos claramente separados, ambos operados pelos mesmos 13 agentes, com regras diferentes em cada um.
 
-### Mundo 1 — Sistema / Backoffice (raiz do repo)
+### Mundo 1 — Sistema agentic (raiz do repo)
 
-Onde o sistema agentic vive. Estrutura **rígida e padronizada** — todo projeto herda do enterprise-template e mantém a estrutura. Os agentes atuam neste mundo quando trabalham em **infraestrutura, configuração, documentação institucional, código produtizado, dados, testes**.
+Onde o **framework agentic** vive — não onde os produtos vivem. Estrutura **rígida e padronizada** — todo projeto herda do enterprise-template e mantém a estrutura. Os agentes atuam neste mundo quando trabalham em **infraestrutura do agentic system, configuração do framework, CI/CD, documentação institucional, hooks, geradores universais**.
 
 ```
-.claude/                ← agentes, commands, hooks, memória, settings
+.claude/                ← agentes, commands, hooks, memória, settings do framework
 CLAUDE.md, AGENTS.md    ← regras do sistema agentic
 README.md, pyproject.toml, uv.lock, .gitignore  ← infra do projeto
-docs/                   ← documentação por agente (.md, .pdf, .pptx, .docx)
-data/                   ← pipelines de dados (raw/bronze/silver/gold)
-scripts/                ← utilitários e automações do sistema
-src/                    ← código produtizado (importável, testável)
-tests/                  ← suíte de testes
+docs/                   ← documentação por agente do sistema (.md, .pdf, .pptx, .docx)
+data/                   ← dados brutos compartilháveis entre produtos (raw/bronze/silver/gold só se compartilhados)
+scripts/                ← automações do framework (CI, generate_docs, hooks, cloud_setup)
+src/                    ← código importável do framework (NÃO de produto)
+tests/                  ← testes do framework (NÃO de produto)
 ```
 
+**Atenção — definição estrita de "sistema":**
+- `scripts/`, `src/`, `tests/` na raiz **NÃO são genéricos**. Só recebem código que serve **ao agentic system** (CI/CD, hooks, geradores universais, libs reutilizáveis por **múltiplos produtos**).
+- Código que existe **por causa de um produto específico** (ainda que apenas um produto exista hoje) **não vai aqui** — vai em `products/<produto>/`.
+- Critério prático: se você deletar este projeto-produto, o arquivo continua fazendo sentido? Se sim, é sistema. Se não, é produto.
+
 **Cada raiz tem propósito claro:**
-- `docs/` → **só documentos** (.md, .pdf, .pptx, .docx) e seus assets de geração. Nunca código `.py` produtizado.
-- `src/` → **só código importável** (módulos Python, classes, funções).
-- `scripts/` → **só automações executáveis** (CLI, jobs, geradores como `gen_pptx.js`, `gen_xlsx.py`).
-- `data/` → **só dados** (parquet, csv, json) — nunca documento ou código.
-- `tests/` → **só testes**.
+- `docs/` → **só documentos** do sistema (.md, .pdf, .pptx, .docx) e assets de geração. Pasta-por-agente. Nunca código `.py` produtizado.
+- `src/` → **só código importável do framework** (módulos universais, libs reutilizáveis por qualquer produto).
+- `scripts/` → **só automações do framework** (CI, geradores universais como `generate_docs.js`, hooks, cloud_setup).
+- `data/` → **só dados compartilháveis entre produtos** (raw da API pública, etc.). Dados específicos de produto vão em `products/<produto>/data/`.
+- `tests/` → **só testes do framework**. Testes de produto vão em `products/<produto>/tests/`.
 
 Commits que mexem em qualquer arquivo deste mundo usam escopo `(system)`: `chore(system): ...`, `docs(system): ...`, `feat(system): ...`.
 
 ### Mundo 2 — Produtos (`products/<produto>/`)
 
-Onde os produtos vivem. **Estrutura livre por produto** — cada produto define o próprio formato (briefings, runs, configurações, layouts). Os agentes atuam neste mundo quando trabalham nos artefatos de cada produto.
+Onde os produtos vivem. **Estrutura livre por produto** — cada produto define o próprio formato. Os agentes atuam neste mundo quando trabalham nos artefatos **e no código** de cada produto.
 
 ```
 products/
-├── <produto-a>/                     ← um produto (estrutura livre, definida pelo produto)
-│   ├── <config>.md
-│   └── <sub-rotina>/
-│       └── runs/<YYYY-MM-DD>/       ← uma execução
-├── <produto-b>/...
+├── <produto>/                       ← raiz do produto (compartilhado entre rotinas/sub-produtos)
+│   ├── <config>.md, <guideline>.md  ← documentação do produto
+│   ├── scripts/                     ← scripts compartilhados entre rotinas do produto
+│   ├── src/                         ← código importável do produto (lib do produto)
+│   ├── tests/                       ← testes do produto
+│   ├── data/                        ← dados específicos do produto (se houver)
+│   ├── <rotina-A>/                  ← rotina/sub-produto específico
+│   │   ├── <briefings, configs específicos da rotina>
+│   │   ├── runs/<YYYY-MM-DD>/       ← execuções da rotina
+│   │   └── (scripts/src/tests só se exclusivos desta rotina)
+│   └── <rotina-B>/...
 ```
 
-**Importante:** dentro de `products/<produto>/` **não há pasta-por-agente**. A estrutura é definida pelo produto e segue a lógica do que aquele produto produz, não a lógica de quem o produz.
+**Subníveis dentro de produto — regra de promoção:**
+
+Dentro de `products/<produto>/` há tipicamente 2 subníveis:
+
+1. **Raiz do produto** (`products/<produto>/{scripts,src,tests}/`) — recebe **código compartilhado entre as rotinas/sub-produtos** daquele produto. Ex: pipeline de dados que serve diária + semanal, lib de publicação compartilhada.
+2. **Pasta da rotina** (`products/<produto>/<rotina>/`) — recebe **código exclusivo daquela rotina específica**. Ex: orquestrador da diária, briefings da diária.
+
+**Regra de promoção:** começa no nível **mais específico** (pasta da rotina). Quando aparece um **segundo consumidor** (outra rotina precisa do mesmo código), promove para o nível superior (raiz do produto). Não anteciparemos compartilhamento por especulação.
+
+**Importante:** dentro de `products/<produto>/` **não há pasta-por-agente** (essa lógica é só de Mundo 1). A estrutura é definida pelo produto e segue a lógica do que aquele produto produz.
 
 Commits que mexem aqui usam escopo do produto ou nenhum escopo: `feat: ...`, `docs: ...`, `feat(<produto>): ...`.
 
@@ -196,28 +216,52 @@ Os agentes alternam entre os dois mundos conforme a tarefa:
 - **No Mundo 1** valem todas as regras de sistema: estrutura rígida, pasta-por-agente em `docs/`, versionamento documental obrigatório, frontmatter YAML em todo `.md` de `docs/`, escopo `(system)` no commit.
 - **No Mundo 2** as regras de Conventional Commits, Kanban e branching continuam — mas a **forma dos artefatos é livre**, definida pelo produto. Não use `docs/<bucket>/<agente>/` para artefatos de produto.
 
-Quando uma tarefa cruza os dois mundos (ex: refatorar pipeline de produto que afeta `src/`), o commit pode usar escopo composto (`feat: ... + chore(system): ...` em commits separados) ou escopo do produto se a mudança principal é no produto.
+Quando uma tarefa cruza os dois mundos (ex: refatorar lib do framework que é consumida por um produto), o commit pode usar escopo composto (`feat: ... + chore(system): ...` em commits separados) ou escopo do produto se a mudança principal é no produto.
 
 #### Critério do leitor primário (regra de desempate)
 
-Quando estiver em dúvida se um documento vai para Mundo 1 ou Mundo 2, pergunte: **quem é o leitor recorrente desse documento?**
+A regra abaixo vale para **qualquer artefato do repo** — `.md`, `.py`, `.sh`, `.yaml`, módulo importável, script CLI, teste unitário, dado, tudo. Não distingue documentação de código.
 
-- Leitor recorrente é o **operador/consumidor de um produto** (você executando o produto, agentes do command que roda o produto, time editorial daquele produto) → Mundo 2 (`products/<produto>/`).
-- Leitor recorrente é o **time que mantém o sistema agentic** (você decidindo arquitetura do agentic, agentes lendo regras do sistema, onboarding de novos agentes) → Mundo 1 (`docs/<bucket>/<agente>/`).
+Quando estiver em dúvida se um arquivo vai para Mundo 1 ou Mundo 2, pergunte: **quem é o leitor/consumidor recorrente desse arquivo?**
 
-Quem **escreve** o documento não define onde ele mora. Quem **lê de forma recorrente** define.
+- Leitor recorrente é o **operador/consumidor de um produto** (você executando o produto, agentes do command que roda o produto, time editorial daquele produto, código que serve apenas àquele produto) → Mundo 2 (`products/<produto>/`).
+- Leitor recorrente é o **time que mantém o sistema agentic** (você decidindo arquitetura do agentic, agentes lendo regras do sistema, onboarding de novos agentes, código universal reutilizável por qualquer produto) → Mundo 1.
+
+Quem **escreve** o arquivo não define onde ele mora. Quem **lê/consome de forma recorrente** define.
+
+**Teste prático para código:** se você deletasse o produto X amanhã, o arquivo continuaria fazendo sentido? Se sim, é sistema (Mundo 1). Se não, é produto (Mundo 2). Isso vale para `.py`, `.sh`, `.yaml` igual vale para `.md`.
 
 Casos típicos que costumam ser mal alocados:
+
+**Documentos:**
 - Runbook de pipeline de produto → vai em `products/<produto>/`, não em `docs/tech/infra-devops/`. (O `infra-devops` é autor; quem lê quando o pipeline quebra é o operador do produto.)
 - Spec operacional / decisão de arquitetura tomada **para atender requisito de um produto** → vai em `products/<produto>/`, não em `docs/tech/tech-lead/`.
 - Plano de teste E2E de um produto → vai em `products/<produto>/`, não em `docs/tech/qa/`.
 - Schema/dicionário de dados de um pipeline que existe **só para um produto** → vai em `products/<produto>/`, não em `docs/tech/data-engineer/`.
+
+**Código:**
+- Script de publicação que só serve a um produto (ex: `publish_principal.py` que posta o boletim no Buffer) → vai em `products/<produto>/scripts/`, não em `scripts/` raiz.
+- Pipeline de dados que só serve a um produto (ex: `pipeline_diaria.py` que orquestra bronze→silver→gold do boletim) → vai em `products/<produto>/scripts/`, não em `scripts/` raiz.
+- Módulo importável que só é consumido por um produto (ex: `monitor/health_check.py` que verifica artefatos do boletim) → vai em `products/<produto>/src/`, não em `src/` raiz.
+- Testes desses scripts/módulos → vão em `products/<produto>/tests/`, não em `tests/` raiz.
 
 Casos que ficam em Mundo 1:
 - ADR sobre escolha de framework do sistema agentic.
 - Runbook de CI/CD do próprio sistema (workflow do GitHub Actions, secrets do repo).
 - Research sobre alternativas de LLM, benchmark de framework.
 - Documentação de personas, pitch, posicionamento que vale para **toda a organização**, não para um produto específico.
+- Hooks do framework, geradores universais (`generate_docs.js`), scripts de bootstrap (`cloud_setup.sh`).
+- Libs verdadeiramente universais — usadas (ou planejadas para uso) por **múltiplos produtos**, não apenas um.
+
+#### Subníveis dentro de produto
+
+Dentro de `products/<produto>/` aplica-se a mesma lógica do leitor primário, em escala menor: **comece no nível mais específico, promova quando aparecer segundo consumidor.**
+
+- Código/doc consumido por **uma rotina/sub-produto específico** → `products/<produto>/<rotina>/`
+- Código/doc consumido por **múltiplas rotinas do produto** → `products/<produto>/{scripts,src,tests}/` (raiz do produto)
+- Código/doc consumido por **múltiplos produtos** → `scripts/`, `src/`, `tests/` raiz (Mundo 1)
+
+Ex: se hoje só a rotina diária consome o `pipeline_diaria.py`, ele mora em `products/boletim/scripts/pipeline_diaria.py`. Se amanhã a rotina semanal precisar do mesmo orquestrador (improvável — mais provável que ela tenha `pipeline_semanal.py`), aí avalia promover para `products/boletim/scripts/pipeline_comum.py`. Se um terceiro produto (não-boletim) precisar, aí promove para `scripts/` raiz.
 
 ---
 
